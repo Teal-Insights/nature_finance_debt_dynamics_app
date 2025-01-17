@@ -6,7 +6,7 @@
 
 imf_key_data <- function(){
   # link
-  countries = "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2024/April/WEOApr2024all.ashx"
+  countries = "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2024/October/WEOOct2024all.ashx"
   # raw data
   df_raw_countries <- read.delim(file = countries, skipNul = TRUE)
   base_columns <- c(names(df_raw_countries)[-tidyr::starts_with(match = "X", ignore.case = TRUE, vars = names(df_raw_countries))])
