@@ -12,6 +12,7 @@ source(file = "R/imf_countries.R")
 source(file = "R/imf_indicators.R")
 source(file = "R/imf_series.R")
 source(file = "R/imf_format_years.R")
+source(file = "R/ui_create_shock_table.R")
 
 # data: -------------------------------------------------------------------
 df_countries <- imf_countries()
@@ -40,7 +41,30 @@ ui <- bslib::page_navbar(
   ),
   # Add favicon to the head section
   tags$head(
-    tags$link(rel = "icon", type = "image/x-icon", href = "logo.png")
+    tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
+    tags$style(HTML("
+      .table-container {
+        background-color: #ffffff;
+        border-radius: 4px;
+      }
+      .row-bordered {
+        border-bottom: 1px solid #dee2e6;
+        padding: 8px 0;
+      }
+      .header-row {
+        border-bottom: 2px solid #0d6efd;
+        background-color: #f8f9fa;
+        font-weight: bold;
+        padding: 8px 0;
+        margin-bottom: 8px;
+      }
+      .card {
+        margin-bottom: 1rem;
+      }
+      .form-control {
+        font-size: 0.9rem;
+      }
+    "))
   ),
   tags$div(
     style = "text-align: center; font-weight: bold; font-size: 20px; color: red; margin-bottom: 0px;",
@@ -80,7 +104,45 @@ ui <- bslib::page_navbar(
         bslib::layout_column_wrap(
           bslib::card(
             bslib::card_header("Shocking key indicators"),
-            rhandsontable::rHandsontableOutput("debt_table")
+            bslib::layout_column_wrap(
+              width = NULL, # Allow nested layouts with manual control
+              heights_equal = "row", # Ensure equal heights within rows
+              # First row with two cards
+              layout_column_wrap(
+                width = 1/3,
+                heights_equal = "row",
+                
+                # Primary Balance Card
+                card(
+                  full_screen = TRUE,
+                  card_header(
+                    class = "bg-primary text-white",
+                    "Primary Balance Shock"
+                  ),
+                  ui_create_shock_table("pb")
+                ),
+                
+                # Real Interest Rate Card
+                card(
+                  full_screen = TRUE,
+                  card_header(
+                    class = "bg-primary text-white",
+                    "Real Interest Rate Shock"
+                  ),
+                  ui_create_shock_table("ir")
+                ),
+                
+                # GDP Growth Card
+                card(
+                  full_screen = TRUE,
+                  card_header(
+                    class = "bg-primary text-white",
+                    "GDP Growth Shock"
+                  ),
+                  ui_create_shock_table("gdp")
+                )
+              )
+            )
           )
         )
       )

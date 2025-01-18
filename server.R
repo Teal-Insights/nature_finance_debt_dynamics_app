@@ -102,8 +102,8 @@ server <- function(input, output, session){
       # modelling debt using debt dynamic equation and new shocks
       mutate(
         debt_shock_pb_by_200_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
-        debt_shock_pb_by_300_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
-        debt_shock_pb_by_400_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp)
+        debt_shock_pb_by_300_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_300_bp),
+        debt_shock_pb_by_400_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_400_bp)
       )
   })
   # debt projection for primary balance
@@ -117,6 +117,7 @@ server <- function(input, output, session){
   # shock real effective rate
   df_shock_ir <- reactive({
     req(df_baseline())
+    
     df_baseline() %>% 
       mutate(
         shock_ir_by_10_bp = (real_effective_rate - (10/100)),
@@ -133,6 +134,7 @@ server <- function(input, output, session){
   # debt projection for real effective rate
   df_debt_projection_ir <- reactive({
     req(df_shock_ir())
+    
     df_shock_ir() %>% 
       select(year, baseline = GGXWDG_NGDP, starts_with("debt"))
   })
@@ -157,18 +159,52 @@ server <- function(input, output, session){
   # debt projection for GDP
   df_debt_projection_gdp <- reactive({
     req(df_shock_gdp())
+    
     df_shock_gdp() %>% 
       select(year, baseline = GGXWDG_NGDP, starts_with("debt"))
   })
   
 # -------------------------------------------------------------------------
 # input: ------------------------------------------------------------------
-
+  coefficients <- list(
+    y2024 = 2.8,
+    y2025 = 3.001,
+    y2026 = 2.567,
+    y2027 = -2.749,
+    y2028 = 2.694,
+    y2029 = 2.663
+  )
+  
+  # Function to create outputs for each shock
+  create_shock_outputs <- function(shock_id) {
+    lapply(2024:2029, function(year) {
+      coef_id <- sprintf("%s_%d_coef", shock_id, year)
+      avg_id <- sprintf("%s_%d_avg", shock_id, year)
+      score_id <- sprintf("%s_%d_score", shock_id, year)
+      
+      # Render coefficient
+      output[[coef_id]] <- renderText({
+        coefficients[[sprintf("y%d", year)]]
+      })
+      
+      # Render score
+      output[[score_id]] <- renderText({
+        req(input[[avg_id]])
+        round(coefficients[[sprintf("y%d", year)]] * input[[avg_id]], 2)
+      })
+    })
+  }
+  
+  # Create outputs for all three shocks
+  create_shock_outputs("pb")   # Primary Balance
+  create_shock_outputs("ir")   # Interest Rate
+  create_shock_outputs("gdp")  # GDP Growth
 
 # -------------------------------------------------------------------------
 # Graphs: -----------------------------------------------------------------
   observe({
-    req(input$id_shock) # Ensure id_shock has a value
+    # Ensure id_shock has a value
+    req(input$id_shock) 
     
     if (input$id_shock == "Primary balance") {
       # Primary balance full plot
@@ -190,8 +226,10 @@ server <- function(input, output, session){
       output$plot_projection <- renderPlot({
         req(df_debt_projection_pb(), df_main())
         projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+        plot_start <- (projections_start_after + 1)
+        
         df_debt_projection_pb() %>% 
-          filter(year >= projections_start_after) %>% 
+          filter(year > projections_start_after) %>% 
           gather(key = indicator, value = outcome, -c("year")) %>% 
           ggplot(aes(x = year, y = outcome, group = indicator, color = indicator)) +
           theme_classic() +
@@ -228,7 +266,7 @@ server <- function(input, output, session){
         filename = function() {
           # Define file extension based on user input
           file_ext <- ifelse(input$file_type_projection == "CSV", ".csv", ".xlsx")
-          paste("data-", input$id_country, "-", Sys.Date(), file_ext, sep = "")
+          paste(input$id_country,"-",input$id_shock, "-","shock","-", Sys.Date(), file_ext, sep = "")
         },
         
         content = function(file) {
@@ -263,8 +301,9 @@ server <- function(input, output, session){
       output$plot_projection <- renderPlot({
         req(df_debt_projection_gdp(), df_main())
         projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+        
         df_debt_projection_gdp() %>% 
-          filter(year >= projections_start_after) %>% 
+          filter(year > projections_start_after) %>% 
           gather(key = indicator, value = outcome, -c("year")) %>% 
           ggplot(aes(x = year, y = outcome, group = indicator, color = indicator)) +
           theme_classic() +
@@ -300,7 +339,7 @@ server <- function(input, output, session){
         filename = function() {
           # Define file extension based on user input
           file_ext <- ifelse(input$file_type_projection == "CSV", ".csv", ".xlsx")
-          paste("data-", input$id_country, "-", Sys.Date(), file_ext, sep = "")
+          paste(input$id_country,"-",input$id_shock, "-","shock","-", Sys.Date(), file_ext, sep = "")
         },
         
         content = function(file) {
@@ -335,8 +374,9 @@ server <- function(input, output, session){
       output$plot_projection <- renderPlot({
         req(df_debt_projection_ir(), df_main())
         projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+        
         df_debt_projection_ir() %>% 
-          filter(year >= projections_start_after) %>% 
+          filter(year > projections_start_after) %>% 
           gather(key = indicator, value = outcome, -c("year")) %>% 
           ggplot(aes(x = year, y = outcome, group = indicator, color = indicator)) +
           theme_classic() +
@@ -372,7 +412,7 @@ server <- function(input, output, session){
         filename = function() {
           # Define file extension based on user input
           file_ext <- ifelse(input$file_type_projection == "CSV", ".csv", ".xlsx")
-          paste("data-", input$id_country, "-", Sys.Date(), file_ext, sep = "")
+          paste(input$id_country,"-",input$id_shock, "-","shock","-", Sys.Date(), file_ext, sep = "")
         },
         
         content = function(file) {
@@ -440,7 +480,7 @@ server <- function(input, output, session){
     filename = function() {
       # Define file extension based on user input
       file_ext <- ifelse(input$file_type == "CSV", ".csv", ".xlsx")
-      paste("data-", input$id_country, "-", Sys.Date(), file_ext, sep = "")
+      paste(input$id_country, "-", Sys.Date(), file_ext, sep = "")
     },
     
     content = function(file) {

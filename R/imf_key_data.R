@@ -1,9 +1,6 @@
 
 # starts: -----------------------------------------------------------------
 
-
-# ends: -------------------------------------------------------------------
-
 imf_key_data <- function(){
   # link
   countries = "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2024/October/WEOOct2024all.ashx"
@@ -31,10 +28,13 @@ imf_key_data <- function(){
       weo_subject_code %in% c(
         "NGDP","GGXONLB","GGR","GGX","GGXWDG",
         "GGXONLB_NGDP","GGR_NGDP","GGX_NGDP","GGXWDG_NGDP"
-        )
       )
+    )
   
   # return data
   return(df_clean_countries)
 }
+
+
+# ends: -------------------------------------------------------------------
 
