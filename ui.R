@@ -15,7 +15,8 @@ source(file = "R/imf_format_years.R")
 source(file = "R/ui_create_shock_table.R")
 
 # data: -------------------------------------------------------------------
-df_countries <- imf_countries()
+df_countries <- imfweo::weo_list_countries() %>% 
+  rename(iso3c = 'country_code',label = "country_name")
 
 # pickers: ----------------------------------------------------------------
 select_country <- df_countries %>% 
