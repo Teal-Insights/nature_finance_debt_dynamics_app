@@ -6,6 +6,7 @@ suppressPackageStartupMessages({
   library(bslib)
   library(shinyWidgets)
   library(DT)
+  library(highcharter)
 })
 # Rscripts: ---------------------------------------------------------------
 source(file = "R/imf_countries.R")
@@ -178,11 +179,11 @@ ui <- bslib::page_navbar(
             width = 1 / 2, # Each card takes half the row
             bslib::card(
               bslib::card_header("Plot: Baseline vs Projection"),
-              shiny::plotOutput(outputId = "plot_full")
+              highcharter::highchartOutput(outputId = "plot_full")
             ),
             bslib::card(
               bslib::card_header("Plot: Projection"),
-              shiny::plotOutput(outputId = "plot_projection")
+              highcharter::highchartOutput(outputId = "plot_projection")
             )
           ),
           # Second row with a full-width card
