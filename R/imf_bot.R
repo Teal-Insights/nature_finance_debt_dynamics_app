@@ -3,6 +3,7 @@
 # loading necessary libraries
 suppressPackageStartupMessages({
   library(tidyverse)
+  library(imfweo)
 })
 # loading necessary Rscripts
 source(file = "R/imf_countries.R")
@@ -107,13 +108,44 @@ df_debt_projection_pb <- df_shock_pb %>%
 # main chart to show the impact: Primary balance shock
 df_debt_projection_pb %>% 
   gather(key = indicator, value = outcome, -c("year")) %>% 
-  ggplot(aes(x = year, y = outcome, group = indicator, color = indicator))+
-  theme_classic()+
-  geom_line()+
+  ggplot(aes(x = year, y = outcome, group = indicator, color = indicator)) +
+  # Use a clean and polished theme
+  theme_minimal(base_size = 14) +
+  # Add lines with better visibility
+  geom_line(linewidth = 1.2) +
+  # Optionally add points for clarity
+  geom_point(size = 2) +
+  # Adjust x-axis scaling
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks = seq(min(df_debt_projection_pb$year), 
+                                  max(df_debt_projection_pb$year), 
+                                  by = 1)) +
+  # Adjust y-axis scaling
+  scale_y_continuous(labels = scales::comma) +
+  # Customize colors for better distinction
+  scale_color_brewer(palette = "Set2") +
+  # Add titles and labels
+  labs(
+    title = "Debt Projection as a Percentage of GDP",
+    subtitle = "Projections over the years",
+    x = "Year",
+    y = "Outcome (%)",
+    caption = "Source: Debt Projection Data"
+  ) +
+  # Enhance legend position and style
   theme(
     legend.position = "top",
-    legend.title = element_blank()
+    legend.title = element_blank(),
+    legend.text = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 14, hjust = 0.5),
+    plot.caption = element_text(size = 10, hjust = 1),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
   )
+
 
 # projection chart to show the impact: Primary balance shock
 df_debt_projection_pb %>% 
