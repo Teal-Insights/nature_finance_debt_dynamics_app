@@ -4,7 +4,8 @@
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session){
-  df_countries <- imf_countries()
+  df_countries <- imfweo::weo_list_countries() %>% 
+    rename(iso3c = 'country_code',label = "country_name")
   
   # get main data
   df_main <- reactive({
@@ -166,13 +167,54 @@ server <- function(input, output, session){
   
 # -------------------------------------------------------------------------
 # input: ------------------------------------------------------------------
-  coefficients <- list(
-    y2024 = 2.8,
-    y2025 = 3.001,
-    y2026 = 2.567,
-    y2027 = -2.749,
-    y2028 = 2.694,
-    y2029 = 2.663
+  # primary balance baseline data
+  pb_data <- reactive({
+    req(df_baseline(), df_main()) 
+    # projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    
+    df_baseline() %>%
+      select(year, value = GGXONLB_NGDP) %>%
+      filter(year > 2023)
+  })
+  # Real interest rate baseline data
+  ir_data <- reactive({
+    req(df_baseline(), df_main()) 
+    # projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    
+    df_baseline() %>%
+      select(year, value = real_effective_rate) %>%
+      filter(year > 2023)
+  })
+  # GDP baseline data
+  gdp_data <- reactive({
+    req(df_baseline(), df_main()) 
+    # projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    
+    df_baseline() %>%
+      select(year, value = gdp_growth) %>%
+      filter(year > 2023)
+  })
+  
+  # Function to convert dataframe to named list for easier access
+  df_to_list <- function(df) {
+    values <- setNames(df$value, paste0("y", df$year))
+    return(as.list(values))
+  }
+  
+  # Make coefficients reactive
+  coefficients <- reactive({
+    list(
+      pb = df_to_list(pb_data()),
+      ir = df_to_list(ir_data()),
+      gdp = df_to_list(gdp_data())
+    )
+  })
+  
+  # Create reactive values to store final values
+  shock_values <- reactiveValues(
+    pb = numeric(6),
+    ir = numeric(6),
+    gdp = numeric(6)
   )
   
   # Function to create outputs for each shock
@@ -181,24 +223,36 @@ server <- function(input, output, session){
       coef_id <- sprintf("%s_%d_coef", shock_id, year)
       avg_id <- sprintf("%s_%d_avg", shock_id, year)
       score_id <- sprintf("%s_%d_score", shock_id, year)
+      year_index <- year - 2023
       
-      # Render coefficient
+      # Render coefficient using shock-specific values
       output[[coef_id]] <- renderText({
-        coefficients[[sprintf("y%d", year)]]
+        coefficients()[[shock_id]][[sprintf("y%d", year)]]
       })
       
-      # Render score
+      # Render score and update shock values
       output[[score_id]] <- renderText({
-        req(input[[avg_id]])
-        round(coefficients[[sprintf("y%d", year)]] * input[[avg_id]], 2)
+        req(input[[avg_id]], coefficients())
+        final_value <- round(coefficients()[[shock_id]][[sprintf("y%d", year)]] * input[[avg_id]], 2)
+        shock_values[[shock_id]][year_index] <- final_value
+        final_value
       })
     })
   }
   
   # Create outputs for all three shocks
-  create_shock_outputs("pb")   # Primary Balance
-  create_shock_outputs("ir")   # Interest Rate
-  create_shock_outputs("gdp")  # GDP Growth
+  create_shock_outputs("pb")
+  create_shock_outputs("ir")
+  create_shock_outputs("gdp")
+  
+  # Make shock values accessible for external use
+  reactive_shock_values <- reactive({
+    list(
+      pb = shock_values$pb,
+      ir = shock_values$ir,
+      gdp = shock_values$gdp
+    )
+  })
 
 # -------------------------------------------------------------------------
 # Graphs: -----------------------------------------------------------------
