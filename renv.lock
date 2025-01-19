@@ -767,6 +767,27 @@
       ],
       "Hash": "ac107251d9d9fd72f0ca8049988f1d7f"
     },
+    "httr2": {
+      "Package": "httr2",
+      "Version": "1.0.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R6",
+        "cli",
+        "curl",
+        "glue",
+        "lifecycle",
+        "magrittr",
+        "openssl",
+        "rappdirs",
+        "rlang",
+        "vctrs",
+        "withr"
+      ],
+      "Hash": "5a76da345ed4f3e6430517e08441edaf"
+    },
     "ids": {
       "Package": "ids",
       "Version": "1.0.1",
@@ -777,6 +798,25 @@
         "uuid"
       ],
       "Hash": "99df65cfef20e525ed38c3d2577f7190"
+    },
+    "imfweo": {
+      "Package": "imfweo",
+      "Version": "0.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "imfweo",
+      "RemoteUsername": "Teal-Insights",
+      "RemoteSha": "a248bb66b9e16bb58a8bdff98ea5b837494d5dc3",
+      "Requirements": [
+        "cli",
+        "dplyr",
+        "httr2",
+        "readr",
+        "readxl",
+        "tidyr"
+      ],
+      "Hash": "48cfb69f8a8655193fb218eaa35d6db4"
     },
     "isoband": {
       "Package": "isoband",
@@ -1250,20 +1290,6 @@
         "withr"
       ],
       "Hash": "97b1d5361a24d9fb588db7afe3e5bcbf"
-    },
-    "rhandsontable": {
-      "Package": "rhandsontable",
-      "Version": "0.3.8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "htmlwidgets",
-        "jsonlite",
-        "magrittr",
-        "methods",
-        "utils"
-      ],
-      "Hash": "cc9b9fd1376181e84c88621711454676"
     },
     "rlang": {
       "Package": "rlang",
