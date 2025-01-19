@@ -4,6 +4,7 @@
 suppressPackageStartupMessages({
   library(tidyverse)
   library(imfweo)
+  library(highcharter)
 })
 # loading necessary Rscripts
 source(file = "R/imf_countries.R")
@@ -159,6 +160,44 @@ df_debt_projection_pb %>%
     legend.title = element_blank()
   )
 
+# First reshape the data (if not already done)
+df_long <- df_debt_projection_pb %>% 
+  filter(year >= 2023) %>% 
+  gather(key = indicator, value = outcome, -c("year"))
+
+# Create the highchart
+highchart() %>%
+  hc_chart(type = "line") %>%
+  hc_xAxis(
+    categories = unique(df_long$year),
+    title = list(text = "Year")
+  ) %>%
+  hc_yAxis(
+    title = list(text = "Debt (% of GDP)")
+  ) %>%
+  hc_add_series_list(
+    lapply(unique(df_long$indicator), function(ind) {
+      data <- df_long %>% 
+        filter(indicator == ind) %>% 
+        select(outcome) %>% 
+        pull()
+      
+      list(
+        name = ind,
+        data = data
+      )
+    })
+  ) %>%
+  hc_legend(
+    align = "center",
+    verticalAlign = "top",
+    layout = "horizontal"
+  ) %>%
+  hc_title(text = "") %>%  # Empty title to match original
+  hc_tooltip(
+    crosshairs = TRUE,
+    shared = TRUE
+  )
 # shock interest rate -----------------------------------------------------
 
 
