@@ -1,6 +1,8 @@
 
 # starts: -----------------------------------------------------------------
-
+# loading necessary components
+source(file = "components/server_create_debt_plot.R")
+source(file = "components/server_prepare_shock_data.R")
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session){
@@ -147,83 +149,6 @@ server <- function(input, output, session){
       )
   })
   
-  
-# Primary balance ---------------------------------------------------------
-  # shock primary balance
-  df_shock_pb <- reactive({
-    req(df_baseline(),reactive_shock_values())
-    
-    df_baseline() %>% 
-      mutate(
-        shock_pb_by_200_bp = (GGXONLB_NGDP + (200/100)),
-        shock_pb_by_300_bp = (GGXONLB_NGDP + (300/100)),
-        shock_pb_by_400_bp = (GGXONLB_NGDP + (400/100))
-      ) %>% 
-      # modelling debt using debt dynamic equation and new shocks
-      mutate(
-        debt_shock_pb_by_200_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
-        debt_shock_pb_by_300_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_300_bp),
-        debt_shock_pb_by_400_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_400_bp)
-      )
-  })
-  # debt projection for primary balance
-  df_debt_projection_pb <- reactive({
-    req(df_shock_pb())
-    df_shock_pb() %>% 
-      select(year, baseline = GGXWDG_NGDP, starts_with("debt"))
-  })
-
-# interest rate -----------------------------------------------------------
-  # shock real effective rate
-  df_shock_ir <- reactive({
-    req(df_baseline())
-    
-    df_baseline() %>% 
-      mutate(
-        shock_ir_by_10_bp = (real_effective_rate - (10/100)),
-        shock_ir_by_20_bp = (real_effective_rate - (20/100)),
-        shock_ir_by_30_bp = (real_effective_rate - (30/100))
-      ) %>% 
-      # modelling debt using debt dynamic equation and new shocks
-      mutate(
-        debt_shock_ir_by_10_bp = (((1+shock_ir_by_10_bp/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-        debt_shock_ir_by_20_bp = (((1+shock_ir_by_20_bp/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-        debt_shock_ir_by_30_bp = (((1+shock_ir_by_30_bp/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - GGXONLB_NGDP)
-      )
-  })
-  # debt projection for real effective rate
-  df_debt_projection_ir <- reactive({
-    req(df_shock_ir())
-    
-    df_shock_ir() %>% 
-      select(year, baseline = GGXWDG_NGDP, starts_with("debt"))
-  })
-
-# GDP ---------------------------------------------------------------------
-  # shock GDP
-  df_shock_gdp <- reactive({
-    req(df_baseline())
-    df_baseline() %>% 
-      mutate(
-        shock_gdp_by_10_bp = (gdp_growth + (10/100)),
-        shock_gdp_by_20_bp = (gdp_growth + (20/100)),
-        shock_gdp_by_30_bp = (gdp_growth + (30/100))
-      ) %>% 
-      # modelling debt using debt dynamic equation and new shocks
-      mutate(
-        debt_shock_gdp_by_10_bp = (((1+real_effective_rate/100)/(1+shock_gdp_by_10_bp/100))*lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-        debt_shock_gdp_by_20_bp = (((1+real_effective_rate/100)/(1+shock_gdp_by_20_bp/100))*lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-        debt_shock_gdp_by_30_bp = (((1+real_effective_rate/100)/(1+shock_gdp_by_30_bp/100))*lag(GGXWDG_NGDP) - GGXONLB_NGDP)
-      )
-  })
-  # debt projection for GDP
-  df_debt_projection_gdp <- reactive({
-    req(df_shock_gdp())
-    
-    df_shock_gdp() %>% 
-      select(year, baseline = GGXWDG_NGDP, starts_with("debt"))
-  })
-  
 # -------------------------------------------------------------------------
 # input: ------------------------------------------------------------------
   # primary balance baseline data
@@ -364,283 +289,30 @@ server <- function(input, output, session){
         }
       }
     )
+  })
+  
+  # Main observer code
+  observe({
+    req(df_policy(), df_main())
     
-    # Handle different shock types
-    if (input$id_shock == "Primary balance") {
-      # Full plot
-      output$plot_full <- highcharter::renderHighchart({
-        req(df_policy(), df_main())
-        projections_start_after <- df_main() %>% 
-          pull(estimates_start_after) %>% 
-          max(na.rm = TRUE)
-        start_year <- projections_start_after - 9
-        
-        df_long <- df_policy() %>% 
-          filter(year >= start_year) %>% 
-          select(year, Baseline, "Debt Projection : Primary balance Shock" = debt_PB_shock) %>% 
-          gather(key = indicator, value = outcome, -c("year"))
-        
-        highchart() %>%
-          hc_chart(type = "line") %>%
-          hc_xAxis(
-            categories = unique(df_long$year)
-          ) %>%
-          hc_yAxis(
-            title = list(text = "Debt (% of GDP)")
-          ) %>%
-          hc_add_series_list(
-            lapply(unique(df_long$indicator), function(ind) {
-              data <- df_long %>% 
-                filter(indicator == ind) %>% 
-                select(outcome) %>% 
-                pull()
-              
-              list(
-                name = ind,
-                data = data
-              )
-            })
-          ) %>%
-          hc_legend(
-            align = "center",
-            verticalAlign = "top",
-            layout = "horizontal"
-          ) %>%
-          hc_title(text = "") %>%
-          hc_tooltip(
-            crosshairs = TRUE,
-            shared = TRUE
-          )
-      })
-      
-      # Projection plot
-      output$plot_projection <- highcharter::renderHighchart({
-        req(df_policy(), df_main())
-        projections_start_after <- df_main() %>% 
-          pull(estimates_start_after) %>% 
-          max(na.rm = TRUE)
-        
-        df_long <- df_policy() %>% 
-          select(year, Baseline, "Debt Projection : Primary balance Shock" = debt_PB_shock) %>% 
-          filter(year > projections_start_after) %>% 
-          gather(key = indicator, value = outcome, -c("year"))
-        
-        highchart() %>%
-          hc_chart(type = "line") %>%
-          hc_xAxis(
-            categories = unique(df_long$year)
-          ) %>%
-          hc_yAxis(
-            title = list(text = "Debt (% of GDP)")
-          ) %>%
-          hc_add_series_list(
-            lapply(unique(df_long$indicator), function(ind) {
-              data <- df_long %>% 
-                filter(indicator == ind) %>% 
-                select(outcome) %>% 
-                pull()
-              
-              list(
-                name = ind,
-                data = data
-              )
-            })
-          ) %>%
-          hc_legend(
-            align = "center",
-            verticalAlign = "top",
-            layout = "horizontal"
-          ) %>%
-          hc_title(text = "") %>%
-          hc_tooltip(
-            crosshairs = TRUE,
-            shared = TRUE
-          )
-      })
-      
-    } else if (input$id_shock == "GDP growth") {
-      # Full plot
-      output$plot_full <- highcharter::renderHighchart({
-        req(df_policy(), df_main())
-        projections_start_after <- df_main() %>% 
-          pull(estimates_start_after) %>% 
-          max(na.rm = TRUE)
-        start_year <- projections_start_after - 9
-        
-        df_long <- df_policy() %>% 
-          filter(year >= start_year) %>% 
-          select(year, Baseline, "Debt Projection : GDP Shock" = debt_GDP_shock) %>% 
-          gather(key = indicator, value = outcome, -c("year")) 
-        
-        highchart() %>%
-          hc_chart(type = "line") %>%
-          hc_xAxis(
-            categories = unique(df_long$year)
-          ) %>%
-          hc_yAxis(
-            title = list(text = "Debt (% of GDP)")
-          ) %>%
-          hc_add_series_list(
-            lapply(unique(df_long$indicator), function(ind) {
-              data <- df_long %>% 
-                filter(indicator == ind) %>% 
-                select(outcome) %>% 
-                pull()
-              
-              list(
-                name = ind,
-                data = data
-              )
-            })
-          ) %>%
-          hc_legend(
-            align = "center",
-            verticalAlign = "top",
-            layout = "horizontal"
-          ) %>%
-          hc_title(text = "") %>%
-          hc_tooltip(
-            crosshairs = TRUE,
-            shared = TRUE
-          )
-      })
-      # Projection plot
-      output$plot_projection <- highcharter::renderHighchart({
-        req(df_policy(), df_main())
-        projections_start_after <- df_main() %>% 
-          pull(estimates_start_after) %>% 
-          max(na.rm = TRUE)
-        
-        df_long <- df_policy() %>% 
-          select(year, Baseline, "Debt Projection : GDP Shock" = debt_GDP_shock) %>% 
-          filter(year > projections_start_after) %>% 
-          gather(key = indicator, value = outcome, -c("year")) 
-        
-        highchart() %>%
-          hc_chart(type = "line") %>%
-          hc_xAxis(
-            categories = unique(df_long$year)
-          ) %>%
-          hc_yAxis(
-            title = list(text = "Debt (% of GDP)")
-          ) %>%
-          hc_add_series_list(
-            lapply(unique(df_long$indicator), function(ind) {
-              data <- df_long %>% 
-                filter(indicator == ind) %>% 
-                select(outcome) %>% 
-                pull()
-              
-              list(
-                name = ind,
-                data = data
-              )
-            })
-          ) %>%
-          hc_legend(
-            align = "center",
-            verticalAlign = "top",
-            layout = "horizontal"
-          ) %>%
-          hc_title(text = "") %>%
-          hc_tooltip(
-            crosshairs = TRUE,
-            shared = TRUE
-          )
-      })
-      
-    } else if (input$id_shock == "Real effective interest rate") {
-      # Full plot
-      output$plot_full <- highcharter::renderHighchart({
-        req(df_policy(), df_main())
-        projections_start_after <- df_main() %>% 
-          pull(estimates_start_after) %>% 
-          max(na.rm = TRUE)
-        start_year <- projections_start_after - 9
-        
-        df_long <- df_policy() %>% 
-          filter(year >= start_year) %>% 
-          select(year, Baseline, "Debt Projection : Real effective interest rate Shock" = debt_Interest_shock) %>% 
-          gather(key = indicator, value = outcome, -c("year")) 
-        
-        highchart() %>%
-          hc_chart(type = "line") %>%
-          hc_xAxis(
-            categories = unique(df_long$year)
-          ) %>%
-          hc_yAxis(
-            title = list(text = "Debt (% of GDP)")
-          ) %>%
-          hc_add_series_list(
-            lapply(unique(df_long$indicator), function(ind) {
-              data <- df_long %>% 
-                filter(indicator == ind) %>% 
-                select(outcome) %>% 
-                pull()
-              
-              list(
-                name = ind,
-                data = data
-              )
-            })
-          ) %>%
-          hc_legend(
-            align = "center",
-            verticalAlign = "top",
-            layout = "horizontal"
-          ) %>%
-          hc_title(text = "") %>%
-          hc_tooltip(
-            crosshairs = TRUE,
-            shared = TRUE
-          )
-      })
-      
-      # Projection plot
-      output$plot_projection <- highcharter::renderHighchart({
-        req(df_policy(), df_main())
-        projections_start_after <- df_main() %>% 
-          pull(estimates_start_after) %>% 
-          max(na.rm = TRUE)
-        
-        df_long <- df_policy() %>% 
-          select(year, Baseline, "Debt Projection : Real effective interest rate Shock" = debt_Interest_shock) %>% 
-          filter(year > projections_start_after) %>% 
-          gather(key = indicator, value = outcome, -c("year"))
-        
-        highchart() %>%
-          hc_chart(type = "line") %>%
-          hc_xAxis(
-            categories = unique(df_long$year)
-          ) %>%
-          hc_yAxis(
-            title = list(text = "Debt (% of GDP)")
-          ) %>%
-          hc_add_series_list(
-            lapply(unique(df_long$indicator), function(ind) {
-              data <- df_long %>% 
-                filter(indicator == ind) %>% 
-                select(outcome) %>% 
-                pull()
-              
-              list(
-                name = ind,
-                data = data
-              )
-            })
-          ) %>%
-          hc_legend(
-            align = "center",
-            verticalAlign = "top",
-            layout = "horizontal"
-          ) %>%
-          hc_title(text = "") %>%
-          hc_tooltip(
-            crosshairs = TRUE,
-            shared = TRUE
-          )
-      })
-    }
+    projections_start_after <- df_main() %>% 
+      pull(estimates_start_after) %>% 
+      max(na.rm = TRUE)
+    start_year <- projections_start_after - 9
+    
+    # Full plot
+    output$plot_full <- highcharter::renderHighchart({
+      df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
+      server_create_debt_plot(df_long)
+    })
+    
+    # Projection plot
+    output$plot_projection <- highcharter::renderHighchart({
+      df_long <- df_policy() %>%
+        filter(year > projections_start_after) %>%
+        server_prepare_shock_data(input$id_shock)
+      server_create_debt_plot(df_long)
+    })
   })
 # -------------------------------------------------------------------------
 # Data: -------------------------------------------------------------------
