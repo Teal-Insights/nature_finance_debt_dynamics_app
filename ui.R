@@ -168,7 +168,7 @@ ui <- bslib::page_navbar(
           shinyWidgets::pickerInput(
             inputId = "id_shock",
             label = "Select shock",
-            choices = c("Primary balance", "GDP growth", "Real effective interest rate"),
+            choices = c("All","GDP growth", "Primary balance", "Real effective interest rate"),
             options = shinyWidgets::pickerOptions(
               actionsBox = TRUE,
               size = 10,
