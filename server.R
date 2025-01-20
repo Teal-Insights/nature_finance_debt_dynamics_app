@@ -93,7 +93,7 @@ server <- function(input, output, session){
   })
   
   df_policy <- reactive({
-    req(df_baseline(), reactive_shock_values(), df_main())
+    req(df_baseline(), reactive_shock_values(), df_main(),available_years())
     
     # Extract `projections_start_after`
     projections_start_after <- df_main() %>%
@@ -113,7 +113,7 @@ server <- function(input, output, session){
       ir_shock = reactive_shock_values()$ir,
       gdp_shock = reactive_shock_values()$gdp
     ) %>%
-      mutate(year = seq(from = value_after, by = 1, length.out = 6))
+      mutate(year = seq(from = value_after, by = 1, length.out = length(available_years())))
     
     # Join and mutate
     full_join(
@@ -151,76 +151,134 @@ server <- function(input, output, session){
   
 # -------------------------------------------------------------------------
 # input: ------------------------------------------------------------------
+  # Get available years from the baseline data
+  available_years <- reactive({
+    req(df_baseline())
+    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    
+    df_baseline() %>%
+      filter(year > projections_start_after) %>%
+      pull(year) %>%
+      sort()
+  })
+  
   # primary balance baseline data
   pb_data <- reactive({
     req(df_baseline(), df_main()) 
-    # projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
     
     df_baseline() %>%
       select(year, value = GGXONLB_NGDP) %>%
-      filter(year > 2023)
+      filter(year > projections_start_after)
   })
   # Real interest rate baseline data
   ir_data <- reactive({
     req(df_baseline(), df_main()) 
-    # projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
     
     df_baseline() %>%
       select(year, value = real_effective_rate) %>%
-      filter(year > 2023)
+      filter(year > projections_start_after)
   })
   # GDP baseline data
   gdp_data <- reactive({
     req(df_baseline(), df_main()) 
-    # projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
     
     df_baseline() %>%
       select(year, value = gdp_growth) %>%
-      filter(year > 2023)
+      filter(year > projections_start_after)
   })
   
-  # Function to convert dataframe to named list for easier access
-  df_to_list <- function(df) {
-    values <- setNames(df$value, paste0("y", df$year))
-    return(as.list(values))
+  # Helper function to convert dataframe to list
+  df_to_list <- function(df, shock_name) {
+    tryCatch({
+      if (nrow(df) == 0) {
+        return(setNames(numeric(0), character(0)))
+      }
+      values <- setNames(df$value, paste0("y", df$year))
+      return(as.list(values))
+    }, error = function(e) {
+      stop(sprintf("Error converting %s data to list: %s", shock_name, e$message))
+    })
   }
   
   # Make coefficients reactive
   coefficients <- reactive({
     list(
-      pb = df_to_list(pb_data()),
-      ir = df_to_list(ir_data()),
-      gdp = df_to_list(gdp_data())
+      pb = df_to_list(pb_data(), "Primary Balance"),
+      ir = df_to_list(ir_data(), "Interest Rate"),
+      gdp = df_to_list(gdp_data(), "GDP Growth")
     )
   })
   
   # Create reactive values to store final values
   shock_values <- reactiveValues(
-    pb = numeric(6),
-    ir = numeric(6),
-    gdp = numeric(6)
+    pb = NULL,
+    ir = NULL,
+    gdp = NULL
   )
   
   # Function to create outputs for each shock
   create_shock_outputs <- function(shock_id) {
-    lapply(2024:2029, function(year) {
-      coef_id <- sprintf("%s_%d_coef", shock_id, year)
-      avg_id <- sprintf("%s_%d_avg", shock_id, year)
-      score_id <- sprintf("%s_%d_score", shock_id, year)
-      year_index <- year - 2023
+    # Create dynamic rows for each shock
+    output[[sprintf("%s_rows", shock_id)]] <- renderUI({
+      years <- available_years()
+      req(years)
       
-      # Render coefficient using shock-specific values
-      output[[coef_id]] <- renderText({
-        coefficients()[[shock_id]][[sprintf("y%d", year)]]
-      })
+      # Initialize shock values vector with the correct length
+      shock_values[[shock_id]] <- numeric(length(years))
       
-      # Render score and update shock values
-      output[[score_id]] <- renderText({
-        req(input[[avg_id]], coefficients())
-        final_value <- round(coefficients()[[shock_id]][[sprintf("y%d", year)]] + input[[avg_id]], 2)
-        shock_values[[shock_id]][year_index] <- final_value
-        final_value
+      # Create a row for each year
+      lapply(seq_along(years), function(i) {
+        year <- years[i]
+        div(
+          class = "row-bordered",
+          fluidRow(
+            column(2, year),
+            column(3, div(style = "padding-top: 7px;", 
+                          textOutput(sprintf("%s_%d_coef", shock_id, year)))),
+            column(4, numericInput(sprintf("%s_%d_avg", shock_id, year), 
+                                   NULL, value = 0.1, step = 0.05)),
+            column(3, textOutput(sprintf("%s_%d_score", shock_id, year)))
+          )
+        )
       })
+    })
+    
+    # Create reactive outputs for coefficients and scores
+    observe({
+      years <- available_years()
+      req(years)
+      
+      for (i in seq_along(years)) {
+        local({
+          year <- years[i]
+          year_index <- i
+          
+          coef_id <- sprintf("%s_%d_coef", shock_id, year)
+          avg_id <- sprintf("%s_%d_avg", shock_id, year)
+          score_id <- sprintf("%s_%d_score", shock_id, year)
+          
+          # Render coefficient
+          output[[coef_id]] <- renderText({
+            req(coefficients()[[shock_id]][[sprintf("y%d", year)]])
+            coefficients()[[shock_id]][[sprintf("y%d", year)]]
+          })
+          
+          # Render score and update shock values
+          output[[score_id]] <- renderText({
+            req(input[[avg_id]], 
+                coefficients()[[shock_id]][[sprintf("y%d", year)]])
+            
+            final_value <- round(
+              coefficients()[[shock_id]][[sprintf("y%d", year)]] + 
+                input[[avg_id]], 2)
+            shock_values[[shock_id]][year_index] <- final_value
+            final_value
+          })
+        })
+      }
     })
   }
   
@@ -231,10 +289,14 @@ server <- function(input, output, session){
   
   # Make shock values accessible for external use
   reactive_shock_values <- reactive({
+    years <- available_years()
+    req(years)
+    
+    # Create a named list for each shock type
     list(
-      pb = shock_values$pb,
-      ir = shock_values$ir,
-      gdp = shock_values$gdp
+      pb = setNames(shock_values$pb, years),
+      ir = setNames(shock_values$ir, years),
+      gdp = setNames(shock_values$gdp, years)
     )
   })
 
