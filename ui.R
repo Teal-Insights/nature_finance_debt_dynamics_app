@@ -43,15 +43,13 @@ ui <- bslib::page_navbar(
       style = "font-weight: bold;"
     )
   ),
-  header = div(  # This will stay at the top
-    div(
-      style = "text-align: center; font-weight: bold; font-size: 20px; color: red; margin-bottom: 0px;",
-      "This app is under development"
-    )
-  ),
-  tags$head(
+  header = tags$head(
     tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
     tags$style(HTML("
+      .bslib-page-fill {
+        min-height: 100vh !important;
+        height: auto !important;
+      } 
       .table-container {
         background-color: #ffffff;
         border-radius: 4px;
@@ -160,48 +158,51 @@ ui <- bslib::page_navbar(
   # Graph Panel
   bslib::nav_panel(
     title = "Graph",
-    bslib::card(
-      bslib::layout_sidebar(
-        sidebar = bslib::sidebar(
-          # Shock selection
-          hr(),
-          shinyWidgets::pickerInput(
-            inputId = "id_shock",
-            label = "Select shock",
-            choices = c("All","GDP growth", "Primary balance", "Real effective interest rate"),
-            options = shinyWidgets::pickerOptions(
-              actionsBox = TRUE,
-              size = 10,
-              selectedTextFormat = "count > 3"
+    div(
+      id = "graph-page",
+      bslib::card(
+        bslib::layout_sidebar(
+          sidebar = bslib::sidebar(
+            # Shock selection
+            hr(),
+            shinyWidgets::pickerInput(
+              inputId = "id_shock",
+              label = "Select shock",
+              choices = c("All","GDP growth", "Primary balance", "Real effective interest rate"),
+              options = shinyWidgets::pickerOptions(
+                actionsBox = TRUE,
+                size = 10,
+                selectedTextFormat = "count > 3"
+              ),
+              multiple = FALSE
             ),
-            multiple = FALSE
+            hr(),
+            selectInput("file_type_projection", "Select: File Type", choices = c("CSV", "Excel")),
+            downloadButton("download_projection", "Download Data"),
+            hr()
           ),
-          hr(),
-          selectInput("file_type_projection", "Select: File Type", choices = c("CSV", "Excel")),
-          downloadButton("download_projection", "Download Data"),
-          hr()
-        ),
-        bslib::layout_column_wrap(
-          width = NULL,
-          heights_equal = "row",
           bslib::layout_column_wrap(
-            width = 1/2,
-            bslib::card(
-              full_screen = TRUE,
-              bslib::card_header("Historical Debt trends", class = "bg-primary text-white"),
-              highcharter::highchartOutput(outputId = "plot_full")
+            width = NULL,
+            heights_equal = "row",
+            bslib::layout_column_wrap(
+              width = 1/2,
+              bslib::card(
+                full_screen = TRUE,
+                bslib::card_header("Historical Debt trends", class = "bg-primary text-white"),
+                highcharter::highchartOutput(outputId = "plot_full")
+              ),
+              bslib::card(
+                full_screen = TRUE,
+                bslib::card_header("Projected Debt trends", class = "bg-primary text-white"),
+                highcharter::highchartOutput(outputId = "plot_projection")
+              )
             ),
             bslib::card(
+              width = 1,
               full_screen = TRUE,
-              bslib::card_header("Projected Debt trends", class = "bg-primary text-white"),
-              highcharter::highchartOutput(outputId = "plot_projection")
+              bslib::card_header("Shock analysis result table", class = "bg-primary text-white"),
+              DT::DTOutput(outputId = "data_projection")
             )
-          ),
-          bslib::card(
-            width = 1,
-            full_screen = TRUE,
-            bslib::card_header("Shock analysis result table", class = "bg-primary text-white"),
-            DT::DTOutput(outputId = "data_projection")
           )
         )
       )
