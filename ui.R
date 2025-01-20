@@ -95,6 +95,7 @@ ui <- bslib::page_navbar(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
           # Select Country
+          hr(),
           shinyWidgets::pickerInput(
             inputId = "id_country",
             label = "Select: Country",
@@ -120,7 +121,6 @@ ui <- bslib::page_navbar(
               layout_column_wrap(
                 width = 1/3,
                 heights_equal = "row",
-                
                 # Primary Balance Card
                 card(
                   full_screen = TRUE,
@@ -130,7 +130,6 @@ ui <- bslib::page_navbar(
                   ),
                   ui_create_shock_table("pb")
                 ),
-                
                 # Real Interest Rate Card
                 card(
                   full_screen = TRUE,
@@ -165,6 +164,7 @@ ui <- bslib::page_navbar(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
           # Shock selection
+          hr(),
           shinyWidgets::pickerInput(
             inputId = "id_shock",
             label = "Select shock",
@@ -178,7 +178,8 @@ ui <- bslib::page_navbar(
           ),
           hr(),
           selectInput("file_type_projection", "Select: File Type", choices = c("CSV", "Excel")),
-          downloadButton("download_projection", "Download Data")
+          downloadButton("download_projection", "Download Data"),
+          hr()
         ),
         bslib::layout_column_wrap(
           width = NULL,
@@ -213,9 +214,13 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
+          hr(),
           selectInput("data_format", "Select: Data format", choices = c("Wide", "Long")),
+          hr(),
           selectInput("file_type", "Select: File Type", choices = c("CSV", "Excel")),
-          downloadButton("downloadData", "Download Data")
+          hr(),
+          downloadButton("downloadData", "Download Data"),
+          hr()
         ),
         bslib::layout_column_wrap(
           bslib::card(
@@ -241,8 +246,19 @@ ui <- bslib::page_navbar(
       font-style: bold;
     ",
     tags$p(
+      tags$a(
+        href = "https://www.naturefinance.net/",
+        target = "_blank",
+        "Nature Finance"
+      ),
+      " | "
+      ,
+      tags$a(
+        href = "#",
+        "Teal Insights"
+      ),
       paste0(
-        "Nature Finance | © ", lubridate::year(Sys.Date()), " | All Rights Reserved."
+        " | © ", lubridate::year(Sys.Date())
       )
     )
   )
