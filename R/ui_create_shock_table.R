@@ -10,10 +10,10 @@ ui_create_shock_table <- function(id) {
     div(
       class = "header-row",
       fluidRow(
-        column(3, "Year"),
-        column(3, "Baseline"),
-        column(3, "Policy shock"),
-        column(3, "Final")
+        column(2, "Year"),
+        column(3, "Baseline (%)"),
+        column(4, "Policy shock (%)"),
+        column(3, "Final shock (%)")
       )
     ),
     
@@ -22,11 +22,11 @@ ui_create_shock_table <- function(id) {
       div(
         class = "row-bordered",
         fluidRow(
-          column(3, year),
+          column(2, year),
           column(3, div(style = "padding-top: 7px;", 
                         textOutput(sprintf("%s_%d_coef", id, year)))),
-          column(3, numericInput(sprintf("%s_%d_avg", id, year), 
-                                 NULL, value = 0.1, step = 0.001)),
+          column(4, numericInput(sprintf("%s_%d_avg", id, year), 
+                                 NULL, value = 0.1, step = 0.05)),
           column(3, textOutput(sprintf("%s_%d_score", id, year)))
         )
       )
