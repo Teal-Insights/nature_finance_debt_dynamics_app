@@ -135,6 +135,7 @@ server <- function(input, output, session){
           year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_GDP_shock
         )
       ) %>% 
+      mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2))) %>% 
       rename(
         Baseline = "GGXWDG_NGDP",
         "GDP growth" = "gdp_growth",
@@ -330,7 +331,16 @@ server <- function(input, output, session){
         gather(key = indicators, value = outcome, -c("year")) %>% 
         filter(year >= start_year) %>% 
         mutate(outcome = round(x = outcome, digits = 2)) %>%
-        spread(key = year, value = outcome)
+        spread(key = year, value = outcome) %>% 
+        mutate(
+          indicators = case_when(
+            indicators == "debt_GDP_shock" ~ "Debt Projection : GDP Shock",
+            indicators == "debt_PB_shock" ~ "Debt Projection : Primary balance Shock",
+            indicators == "debt_Interest_shock" ~ "Debt Projection : Real effective interest rate Shock",
+            indicators == "Baseline" ~ "Baseline Debt",
+            TRUE ~ indicators
+          )
+        )
     })
     
     # Common data table rendering for all cases
@@ -367,7 +377,7 @@ server <- function(input, output, session){
         
         df_long <- df_policy() %>% 
           filter(year >= start_year) %>% 
-          select(year, Baseline, debt_PB_shock) %>% 
+          select(year, Baseline, "Debt Projection : Primary balance Shock" = debt_PB_shock) %>% 
           gather(key = indicator, value = outcome, -c("year"))
         
         highchart() %>%
@@ -411,7 +421,7 @@ server <- function(input, output, session){
           max(na.rm = TRUE)
         
         df_long <- df_policy() %>% 
-          select(year, Baseline, debt_PB_shock) %>% 
+          select(year, Baseline, "Debt Projection : Primary balance Shock" = debt_PB_shock) %>% 
           filter(year > projections_start_after) %>% 
           gather(key = indicator, value = outcome, -c("year"))
         
@@ -459,7 +469,7 @@ server <- function(input, output, session){
         
         df_long <- df_policy() %>% 
           filter(year >= start_year) %>% 
-          select(year, Baseline, debt_GDP_shock) %>% 
+          select(year, Baseline, "Debt Projection : GDP Shock" = debt_GDP_shock) %>% 
           gather(key = indicator, value = outcome, -c("year")) 
         
         highchart() %>%
@@ -502,7 +512,7 @@ server <- function(input, output, session){
           max(na.rm = TRUE)
         
         df_long <- df_policy() %>% 
-          select(year, Baseline, debt_GDP_shock) %>% 
+          select(year, Baseline, "Debt Projection : GDP Shock" = debt_GDP_shock) %>% 
           filter(year > projections_start_after) %>% 
           gather(key = indicator, value = outcome, -c("year")) 
         
@@ -550,7 +560,7 @@ server <- function(input, output, session){
         
         df_long <- df_policy() %>% 
           filter(year >= start_year) %>% 
-          select(year, Baseline, debt_Interest_shock) %>% 
+          select(year, Baseline, "Debt Projection : Real effective interest rate Shock" = debt_Interest_shock) %>% 
           gather(key = indicator, value = outcome, -c("year")) 
         
         highchart() %>%
@@ -594,7 +604,7 @@ server <- function(input, output, session){
           max(na.rm = TRUE)
         
         df_long <- df_policy() %>% 
-          select(year, Baseline, debt_Interest_shock) %>% 
+          select(year, Baseline, "Debt Projection : Real effective interest rate Shock" = debt_Interest_shock) %>% 
           filter(year > projections_start_after) %>% 
           gather(key = indicator, value = outcome, -c("year"))
         
