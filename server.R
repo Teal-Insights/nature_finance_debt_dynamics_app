@@ -333,7 +333,28 @@ server <- function(input, output, session){
     # Common data table rendering for all cases
     output$data_projection <- renderDT({
       req(projection_processed_data())
-      DT::datatable(projection_processed_data())
+      DT::datatable(
+        projection_processed_data(),
+        options = list(
+          autoWidth = TRUE,
+          scrollX = TRUE,
+          columnDefs = list(
+            # First column configuration
+            list(
+              targets = 1,
+              orderable = TRUE,  # Allow sorting
+              className = "text-column"
+            ),
+            # All other columns configuration
+            list(
+              targets = "_all", 
+              orderable = FALSE  # Disable sorting
+            )
+          ),
+          # Initial sorting configuration (optional)
+          order = list(list(1, 'asc'))
+        )
+      )
     })
     
     # Common download handler for all cases
