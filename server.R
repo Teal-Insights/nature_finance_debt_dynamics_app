@@ -69,12 +69,25 @@ server <- function(input, output, session){
       mutate(outcome = round(x = outcome, digits = 2))
   })
   
+  # projections starts after - reactive
+  year_when_estimations_start_after <- reactive({
+    req(df_main())
+    
+    # option: weo
+    df_main() %>%
+      pull(estimates_start_after) %>%
+      max(na.rm = TRUE)
+    
+    # option: current year
+    # lubridate::year(Sys.Date()) - 1
+  })
   # -------------------------------------------------------------------------
   # shocks analysis ---------------------------------------------------------
   
   df_baseline <- reactive({
-    req(df_main(), df_specific())
-    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    req(df_main(), df_specific(),year_when_estimations_start_after())
+    projections_start_after <- year_when_estimations_start_after()
+    
     df_specific() %>% 
       select(weo_subject_code, year, outcome) %>% 
       filter(weo_subject_code %in% c("GGXWDG_NGDP","gdp_growth", "GGXONLB_NGDP", "real_effective_rate")) %>% 
@@ -93,12 +106,11 @@ server <- function(input, output, session){
   })
   
   df_policy <- reactive({
-    req(df_baseline(), reactive_shock_values(), df_main(),available_years())
+    req(df_baseline(), reactive_shock_values(), 
+        year_when_estimations_start_after(),available_years())
     
     # Extract `projections_start_after`
-    projections_start_after <- df_main() %>%
-      pull(estimates_start_after) %>%
-      max(na.rm = TRUE)
+    projections_start_after <- year_when_estimations_start_after()
     
     # Determine `value_after`
     value_after <- ifelse(
@@ -153,8 +165,8 @@ server <- function(input, output, session){
   # input: ------------------------------------------------------------------
   # Get available years from the baseline data
   available_years <- reactive({
-    req(df_baseline())
-    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    req(df_baseline(), year_when_estimations_start_after())
+    projections_start_after <- year_when_estimations_start_after()
     
     df_baseline() %>%
       filter(year > projections_start_after) %>%
@@ -164,8 +176,8 @@ server <- function(input, output, session){
   
   # primary balance baseline data
   pb_data <- reactive({
-    req(df_baseline(), df_main()) 
-    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    req(df_baseline(), year_when_estimations_start_after()) 
+    projections_start_after <- year_when_estimations_start_after()
     
     df_baseline() %>%
       select(year, value = GGXONLB_NGDP) %>%
@@ -173,8 +185,8 @@ server <- function(input, output, session){
   })
   # Real interest rate baseline data
   ir_data <- reactive({
-    req(df_baseline(), df_main()) 
-    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    req(df_baseline(), year_when_estimations_start_after()) 
+    projections_start_after <- year_when_estimations_start_after()
     
     df_baseline() %>%
       select(year, value = real_effective_rate) %>%
@@ -182,8 +194,8 @@ server <- function(input, output, session){
   })
   # GDP baseline data
   gdp_data <- reactive({
-    req(df_baseline(), df_main()) 
-    projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
+    req(df_baseline(), year_when_estimations_start_after()) 
+    projections_start_after <- year_when_estimations_start_after()
     
     df_baseline() %>%
       select(year, value = gdp_growth) %>%
@@ -308,10 +320,8 @@ server <- function(input, output, session){
     
     # Create reactive for processed data - shared across all conditions
     projection_processed_data <- reactive({
-      req(df_policy(), df_main())
-      projections_start_after <- df_main() %>% 
-        pull(estimates_start_after) %>% 
-        max(na.rm = TRUE)
+      req(df_policy(), year_when_estimations_start_after())
+      projections_start_after <- year_when_estimations_start_after()
       start_year <- projections_start_after - 9
       
       df_policy() %>% 
@@ -355,11 +365,8 @@ server <- function(input, output, session){
   
   # Main observer code
   observe({
-    req(df_policy(), df_main())
-    
-    projections_start_after <- df_main() %>% 
-      pull(estimates_start_after) %>% 
-      max(na.rm = TRUE)
+    req(df_policy(), year_when_estimations_start_after())
+    projections_start_after <- year_when_estimations_start_after()
     start_year <- projections_start_after - 9
     
     # Full plot
