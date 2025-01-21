@@ -68,10 +68,10 @@ server <- function(input, output, session){
       fill(country_name, .direction = "down") %>% 
       mutate(outcome = round(x = outcome, digits = 2))
   })
-
-# -------------------------------------------------------------------------
-# shocks analysis ---------------------------------------------------------
-
+  
+  # -------------------------------------------------------------------------
+  # shocks analysis ---------------------------------------------------------
+  
   df_baseline <- reactive({
     req(df_main(), df_specific())
     projections_start_after <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
@@ -149,8 +149,8 @@ server <- function(input, output, session){
       )
   })
   
-# -------------------------------------------------------------------------
-# input: ------------------------------------------------------------------
+  # -------------------------------------------------------------------------
+  # input: ------------------------------------------------------------------
   # Get available years from the baseline data
   available_years <- reactive({
     req(df_baseline())
@@ -299,9 +299,9 @@ server <- function(input, output, session){
       gdp = setNames(shock_values$gdp, years)
     )
   })
-
-# -------------------------------------------------------------------------
-# Graphs: -----------------------------------------------------------------
+  
+  # -------------------------------------------------------------------------
+  # Graphs: -----------------------------------------------------------------
   observe({
     # Ensure id_shock has a value
     req(input$id_shock)
@@ -376,8 +376,8 @@ server <- function(input, output, session){
       server_create_debt_plot(df_long)
     })
   })
-# -------------------------------------------------------------------------
-# Data: -------------------------------------------------------------------
+  # -------------------------------------------------------------------------
+  # Data: -------------------------------------------------------------------
   # Reactive data preparation
   processed_data <- reactive({
     req(df_specific())
@@ -385,12 +385,12 @@ server <- function(input, output, session){
     # return data
     if (input$data_format == "Long") {
       df_specific() %>% 
-          select(-estimates_start_after)
+        select(-estimates_start_after)
     }else {
       df_specific() %>% 
-          spread(key = year, value = outcome) %>% 
-          arrange(units) %>% 
-          select(-estimates_start_after)
+        spread(key = year, value = outcome) %>% 
+        arrange(units) %>% 
+        select(-estimates_start_after)
     }
   })
   
@@ -451,10 +451,8 @@ server <- function(input, output, session){
   )
   
   
-# -------------------------------------------------------------------------
-# end: --------------------------------------------------------------------
+  # -------------------------------------------------------------------------
+  # end: --------------------------------------------------------------------
 }
 
 # ends: -------------------------------------------------------------------
-
-
