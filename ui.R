@@ -51,30 +51,60 @@ ui <- bslib::page_navbar(
   ),
   tags$head(
     tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
+    # Integrated styles
     tags$style(HTML("
-      .table-container {
-        background-color: #ffffff;
-        border-radius: 4px;
-      }
-      .row-bordered {
-        border-bottom: 1px solid #dee2e6;
-        padding: 8px 0;
-      }
-      .header-row {
-        border-bottom: 2px solid #b0b2b4;
-        border-top: 2px solid #b0b2b4;
-        background-color: #f8f9fa;
-        font-weight: bold;
-        padding: 8px 0;
-        margin-bottom: 8px;
-      }
-      .card {
-        margin-bottom: 1rem;
-      }
-      .form-control {
-        font-size: 0.9rem;
-      }
-    "))
+    .table-container {
+      background-color: #ffffff;
+      border-radius: 4px;
+    }
+    .row-bordered {
+      border-bottom: 1px solid #dee2e6;
+      padding: 8px 0;
+    }
+    .header-row {
+      border-bottom: 2px solid #b0b2b4;
+      border-top: 2px solid #b0b2b4;
+      background-color: #f8f9fa;
+      font-weight: bold;
+      padding: 8px 0;
+      margin-bottom: 8px;
+    }
+    .card {
+      margin-bottom: 1rem;
+    }
+    .form-control {
+      font-size: 0.9rem;
+    }
+    .math-section {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .math-section h5 {
+      color: #2c3e50;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .math-section ul {
+      margin-left: 20px;
+    }
+    .card {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+    .bg-primary {
+      background-color: #2c3e50 !important;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+  "))
   ),
   bslib::nav_spacer(),
   theme = bslib::bs_theme(
@@ -233,7 +263,98 @@ ui <- bslib::page_navbar(
   
   # Documentation Panel
   bslib::nav_panel(
-    title = "Documentation"
+    title = "Documentation",
+    
+    # Main container
+    card(
+      height = "100%",
+      full_screen = TRUE,
+      card_header(
+        class = "bg-primary text-white",
+        h2("Debt Dynamics Under Uncertainty")
+      ),
+      
+      card_body(
+        div(
+          class = "container",
+          
+          # Overview section
+          card(
+            card_header(
+              class = "bg-light",
+              h4("Overview")
+            ),
+            card_body(
+              p("Debt dynamics under uncertainty is a framework for analyzing how public debt evolves 
+              over time when key macroeconomic variables are subject to shocks. This analysis helps 
+              policymakers understand potential debt trajectories and assess fiscal sustainability risks.")
+            )
+          ),
+          
+          # Formula section
+          card(
+            class = "mt-4",
+            card_header(
+              class = "bg-light",
+              h4("Key Equations")
+            ),
+            card_body(
+              withMathJax(
+                HTML("
+                <div class='math-section'>
+                  <h5>Primary Debt Dynamics Equation:</h5>
+                  \\[ \\Delta d_t = \\frac{r_t - g_t}{1 + g_t}d_{t-1} - pb_t + dda_t + \\epsilon_t \\]
+                  
+                  <h5>Where:</h5>
+                  <ul>
+                    <li>\\( d_t \\) = debt-to-GDP ratio at time t</li>
+                    <li>\\( r_t \\) = real interest rate</li>
+                    <li>\\( g_t \\) = real GDP growth rate</li>
+                    <li>\\( pb_t \\) = primary balance ratio to GDP</li>
+                    <li>\\( dda_t \\) = deficit-debt adjustments</li>
+                    <li>\\( \\epsilon_t \\) = stochastic shock term</li>
+                  </ul>
+                  
+                  <h5>Uncertainty Components:</h5>
+                  \\[ \\epsilon_t \\sim N(0, \\sigma^2) \\]
+                  \\[ \\sigma^2 = \\sum_{i=1}^{n} w_i \\sigma_i^2 \\]
+                </div>
+              ")
+              )
+            )
+          ),
+          
+          # Methodology section
+          card(
+            class = "mt-4",
+            card_header(
+              class = "bg-light",
+              h4("Methodology")
+            ),
+            card_body(
+              tags$div(
+                h5("Stochastic Simulation Approach"),
+                p("The analysis employs Monte Carlo simulations to generate multiple debt trajectories:"),
+                tags$ol(
+                  tags$li("Generate random shocks for key variables (growth, interest rates, primary balance)"),
+                  tags$li("Simulate debt paths using the primary equation"),
+                  tags$li("Calculate confidence intervals and fan charts"),
+                  tags$li("Assess probability of debt exceeding specific thresholds")
+                ),
+                
+                h5("Key Assumptions", class = "mt-4"),
+                p("The model assumes:"),
+                tags$ul(
+                  tags$li("Normally distributed shocks"),
+                  tags$li("Constant variance-covariance structure"),
+                  tags$li("No structural breaks in relationships")
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   ),
   
   # Footer
