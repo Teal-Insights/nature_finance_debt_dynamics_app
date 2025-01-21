@@ -285,9 +285,18 @@ ui <- bslib::page_navbar(
               h4("Overview")
             ),
             card_body(
-              p("Debt dynamics under uncertainty is a framework for analyzing how public debt evolves 
-              over time when key macroeconomic variables are subject to shocks. This analysis helps 
-              policymakers understand potential debt trajectories and assess fiscal sustainability risks.")
+              div(
+                class = "row-bordered",
+                tags$div(
+                  h4("Debt Dynamics Under Uncertainty", style = "font-weight: bold;"),
+                  p("Debt dynamics under uncertainty examines how sovereign debt evolves in the face of unpredictable economic, financial, and geopolitical factors. This framework considers the complex interplay between macroeconomic variables such as real GDP growth, interest rates, exchange rates, fiscal balances, and the stochastic shocks that can disrupt their trajectories."),
+                  p("Uncertainty in debt dynamics arises from external and domestic sources. External factors include volatile global financial markets, fluctuating commodity prices, and changes in international monetary policies. Domestic challenges might involve political instability, natural disasters, or unexpected revenue shortfalls. These uncertainties complicate forecasting and policy formulation, making debt sustainability assessments a probabilistic exercise rather than a deterministic one."),
+                  p("Key analytical tools in this field include stochastic simulations, scenario analysis, and Value-at-Risk (VaR) models, which estimate the probability of adverse debt outcomes under different scenarios. These methods help policymakers assess the likelihood of crossing critical thresholds, such as unsustainable debt-to-GDP ratios, and identify vulnerabilities in public debt portfolios."),
+                  p("Effective debt management under uncertainty relies on adopting strategies that enhance resilience. This includes maintaining fiscal buffers, diversifying the debt portfolio, extending maturities, and linking debt to real economic performance through innovative instruments like GDP-linked bonds."),
+                  p("Understanding debt dynamics under uncertainty is crucial for developing robust debt policies that minimize default risks and maintain access to capital markets. It also informs international stakeholders, such as the IMF and World Bank, in designing tailored support programs for vulnerable economies."),
+                  p("By integrating uncertainty into debt analysis, governments can prepare for adverse scenarios, optimize policy responses, and align debt strategies with long-term development objectives, promoting macroeconomic stability and fiscal sustainability.")
+                )
+              )
             )
           ),
           
