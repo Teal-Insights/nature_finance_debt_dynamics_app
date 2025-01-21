@@ -13,18 +13,18 @@ source(file = "R/imf_format_years.R")
 
 # api call: ---------------------------------------------------------------
 df_main <- imf_key_data() %>% 
-  filter(iso3c == "THA")
+  filter(iso3c == "KEN")
 
 
 # full data: --------------------------------------------------------------
+# projections_start_after <- df_main %>% pull(estimates_start_after) %>% max(na.rm = TRUE) + 2
+projections_start_after <- 2026
+
 df_specific <- df_main %>% 
   select(c(weo_country_code, iso3c, country_name, weo_subject_code, 
            subject_descriptor,units, scale, estimates_start_after, year, 
            outcome)) %>% 
-  filter(year >= df_main %>% 
-           pull(estimates_start_after) %>% 
-           unique() %>% 
-           max() - 13
+  filter(year >= (projections_start_after - 13)
   )
 
 df_long <- df_specific %>% 
@@ -71,7 +71,6 @@ df_final <- full_join(
   mutate(outcome = round(x = outcome, digits = 2))
 
 # shock analysis ----------------------------------------------------------
-projections_start_after <- df_main %>% pull(estimates_start_after) %>% max(na.rm = TRUE)
 df_baseline <- df_final %>% 
   select(weo_subject_code, year, outcome) %>% 
   filter(weo_subject_code %in% c("GGXWDG_NGDP","gdp_growth", "GGXONLB_NGDP", "real_effective_rate")) %>% 
@@ -101,63 +100,59 @@ df_shock_pb <- df_baseline %>%
     debt_shock_pb_by_200_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
     debt_shock_pb_by_300_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
     debt_shock_pb_by_400_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp)
-  )
+  ) %>% 
+  mutate(
+    debt_shock_pb_by_200_bp = case_when(
+      year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_shock_pb_by_200_bp
+    ),
+    debt_shock_pb_by_300_bp = case_when(
+      year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_shock_pb_by_300_bp
+    ),
+    debt_shock_pb_by_400_bp = case_when(
+      year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_shock_pb_by_400_bp
+    )
+  ) %>% 
+  mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2)))
+
 # debt projection for primary balance
 df_debt_projection_pb <- df_shock_pb %>% 
   select(year, baseline = GGXWDG_NGDP, starts_with("debt"))
 
 # main chart to show the impact: Primary balance shock
-df_debt_projection_pb %>% 
-  gather(key = indicator, value = outcome, -c("year")) %>% 
-  ggplot(aes(x = year, y = outcome, group = indicator, color = indicator)) +
-  # Use a clean and polished theme
-  theme_minimal(base_size = 14) +
-  # Add lines with better visibility
-  geom_line(linewidth = 1.2) +
-  # Optionally add points for clarity
-  geom_point(size = 2) +
-  # Adjust x-axis scaling
-  scale_x_continuous(expand = c(0, 0), 
-                     breaks = seq(min(df_debt_projection_pb$year), 
-                                  max(df_debt_projection_pb$year), 
-                                  by = 1)) +
-  # Adjust y-axis scaling
-  scale_y_continuous(labels = scales::comma) +
-  # Customize colors for better distinction
-  scale_color_brewer(palette = "Set2") +
-  # Add titles and labels
-  labs(
-    title = "Debt Projection as a Percentage of GDP",
-    subtitle = "Projections over the years",
-    x = "Year",
-    y = "Outcome (%)",
-    caption = "Source: Debt Projection Data"
-  ) +
-  # Enhance legend position and style
-  theme(
-    legend.position = "top",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 12),
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
-    plot.subtitle = element_text(size = 14, hjust = 0.5),
-    plot.caption = element_text(size = 10, hjust = 1),
-    axis.title = element_text(size = 14),
-    axis.text = element_text(size = 12),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank()
-  )
+df_long <- df_debt_projection_pb %>% 
+  gather(key = indicator, value = outcome, -c("year"))
 
-
-# projection chart to show the impact: Primary balance shock
-df_debt_projection_pb %>% 
-  filter(year >= 2023) %>% 
-  gather(key = indicator, value = outcome, -c("year")) %>% 
-  ggplot(aes(x = year, y = outcome, group = indicator, color = indicator))+
-  theme_classic()+
-  geom_line()+
-  theme(
-    legend.position = "top",
-    legend.title = element_blank()
+highchart() %>%
+  hc_chart(type = "line") %>%
+  hc_xAxis(
+    categories = unique(df_long$year),
+    title = list(text = "Year")
+  ) %>%
+  hc_yAxis(
+    title = list(text = "Debt (% of GDP)")
+  ) %>%
+  hc_add_series_list(
+    lapply(unique(df_long$indicator), function(ind) {
+      data <- df_long %>% 
+        filter(indicator == ind) %>% 
+        select(outcome) %>% 
+        pull()
+      
+      list(
+        name = ind,
+        data = data
+      )
+    })
+  ) %>%
+  hc_legend(
+    align = "center",
+    verticalAlign = "top",
+    layout = "horizontal"
+  ) %>%
+  hc_title(text = "") %>%  # Empty title to match original
+  hc_tooltip(
+    crosshairs = TRUE,
+    shared = TRUE
   )
 
 # First reshape the data (if not already done)
