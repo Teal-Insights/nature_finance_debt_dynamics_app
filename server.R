@@ -74,9 +74,8 @@ server <- function(input, output, session){
     req(df_main())
     
     # option: weo
-    df_main() %>%
-      pull(estimates_start_after) %>%
-      max(na.rm = TRUE)
+    start_value <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE) 
+    start_value + 0
     
     # option: current year
     # lubridate::year(Sys.Date()) - 1
