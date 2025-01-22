@@ -26,7 +26,9 @@ select_country <- df_countries %>%
   pull(label) %>% 
   unique() %>% 
   sort()
-
+# projection year
+current_year <- lubridate::year(Sys.Date())
+projection_years <- seq(from = current_year, by = 1, length.out = 4)
 # ui ----------------------------------------------------------------------
 ui <- bslib::page_navbar(
   # Initialize shinyjs
@@ -53,6 +55,10 @@ ui <- bslib::page_navbar(
     tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
     # Integrated styles
     tags$style(HTML("
+    .bslib-page-fill {
+        min-height: 100vh !important;
+        height: auto !important;
+      } 
     .table-container {
       background-color: #ffffff;
       border-radius: 4px;
@@ -124,8 +130,8 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          # Select Country
           hr(),
+          # Select Country
           shinyWidgets::pickerInput(
             inputId = "id_country",
             label = "Select: Country",
@@ -140,53 +146,82 @@ ui <- bslib::page_navbar(
             ),
             multiple = FALSE
           ),
+          hr(),
+          # projection year picker
+          shinyWidgets::pickerInput(
+            inputId = "projection_year",
+            label = "Projections start in",
+            choices = projection_years,
+            options = shinyWidgets::pickerOptions(
+              actionsBox = TRUE,
+              size = 10,
+              selectedTextFormat = "count > 3",
+              liveSearch = TRUE,
+              liveSearchStyle = "contains",
+              liveSearchPlaceholder = "Search year..."
+            ),
+            multiple = FALSE
+          ),
           hr()
         ),
         bslib::layout_column_wrap(
-          bslib::card(
-            bslib::card_header("Shocking key indicators", class = "bg-primary text-white"),
-            bslib::layout_column_wrap(
-              width = NULL,
-              heights_equal = "row",
-              layout_column_wrap(
-                width = 1/3,
-                heights_equal = "row",
-                # Primary Balance Card
-                card(
-                  full_screen = TRUE,
-                  card_header(
-                    class = "bg-primary text-white",
-                    "Primary Balance Shock"
-                  ),
-                  ui_create_shock_table("pb")
-                ),
-                # Real Interest Rate Card
-                card(
-                  full_screen = TRUE,
-                  card_header(
-                    class = "bg-primary text-white",
-                    "Real Interest Rate Shock"
-                  ),
-                  ui_create_shock_table("ir")
-                ),
-                
-                # GDP Growth Card
-                card(
-                  full_screen = TRUE,
-                  card_header(
-                    class = "bg-primary text-white",
-                    "GDP Growth Shock"
-                  ),
-                  ui_create_shock_table("gdp")
-                )
-              )
+          width = NULL,
+          heights_equal = "row",
+          layout_column_wrap(
+            width = 1/3,
+            heights_equal = "row",
+            # Primary Balance Card
+            card(
+              full_screen = TRUE,
+              card_header(
+                class = "bg-primary text-white",
+                "Primary Balance Shock"
+              ),
+              ui_create_shock_table("pb")
+            ),
+            # Real Interest Rate Card
+            card(
+              full_screen = TRUE,
+              card_header(
+                class = "bg-primary text-white",
+                "Real Interest Rate Shock"
+              ),
+              ui_create_shock_table("ir")
+            ),
+            
+            # GDP Growth Card
+            card(
+              full_screen = TRUE,
+              card_header(
+                class = "bg-primary text-white",
+                "GDP Growth Shock"
+              ),
+              ui_create_shock_table("gdp")
+            )
+          )
+        ),
+        bslib::layout_column_wrap(
+          width = NULL,
+          heights_equal = "row",
+          bslib::layout_column_wrap(
+            width = 1/2,
+            bslib::card(
+              full_screen = TRUE,
+              bslib::card_header("Historical Debt trends", class = "bg-primary text-white"),
+              echarts4r::echarts4rOutput(outputId = "plot_full_input")
+            ),
+            bslib::card(
+              full_screen = TRUE,
+              bslib::card_header("Projected Debt trends", class = "bg-primary text-white"),
+              echarts4r::echarts4rOutput(outputId = "plot_projection_input")
             )
           )
         )
       )
     )
   ),
-  
+
+# Graph panel: ------------------------------------------------------------
   # Graph Panel
   bslib::nav_panel(
     title = "Graph",
@@ -198,7 +233,7 @@ ui <- bslib::page_navbar(
           shinyWidgets::pickerInput(
             inputId = "id_shock",
             label = "Select shock",
-            choices = c("All","GDP growth", "Primary balance", "Real effective interest rate"),
+            choices = c("Policy shock","GDP growth", "Primary balance", "Real effective interest rate"),
             options = shinyWidgets::pickerOptions(
               actionsBox = TRUE,
               size = 10,
