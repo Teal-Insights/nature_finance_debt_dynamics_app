@@ -113,18 +113,23 @@ server <- function(input, output, session){
     
     # Determine `value_after`
     value_after <- ifelse(
-      test = (projections_start_after == 2023),
-      yes = projections_start_after + 1,
-      no = projections_start_after
+      test = (projections_start_after == 2024),
+      yes = projections_start_after,
+      no = projections_start_after + 1
     )
     
     # Create `df_new_shock`
+    new_pb_shock = reactive_shock_values()$pb
+    new_ir_shock = reactive_shock_values()$ir
+    new_gdp_shock = reactive_shock_values()$gdp
+    new_year = seq(from = value_after, by = 1, length.out = length(available_years()))
+    
     df_new_shock <- data.frame(
-      pb_shock = reactive_shock_values()$pb,
-      ir_shock = reactive_shock_values()$ir,
-      gdp_shock = reactive_shock_values()$gdp
-    ) %>%
-      mutate(year = seq(from = value_after, by = 1, length.out = length(available_years())))
+      year = new_year,
+      pb_shock = new_pb_shock,
+      ir_shock = new_ir_shock,
+      gdp_shock = new_gdp_shock
+    ) 
     
     # Join and mutate
     full_join(
@@ -135,7 +140,8 @@ server <- function(input, output, session){
       mutate(
         debt_PB_shock = (((1 + real_effective_rate / 100) / (1 + gdp_growth / 100)) * lag(GGXWDG_NGDP) - pb_shock),
         debt_Interest_shock = (((1 + ir_shock / 100) / (1 + gdp_growth / 100)) * lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-        debt_GDP_shock = (((1 + real_effective_rate / 100) / (1 + gdp_shock / 100)) * lag(GGXWDG_NGDP) - GGXONLB_NGDP)
+        debt_GDP_shock = (((1 + real_effective_rate / 100) / (1 + gdp_shock / 100)) * lag(GGXWDG_NGDP) - GGXONLB_NGDP),
+        debt_policy_shock = (((1 + ir_shock / 100) / (1 + gdp_shock / 100)) * lag(GGXWDG_NGDP) - pb_shock),
       ) %>% 
       mutate(
         debt_PB_shock = case_when(
@@ -170,6 +176,7 @@ server <- function(input, output, session){
     df_baseline() %>%
       filter(year > projections_start_after) %>%
       pull(year) %>%
+      unique() %>% 
       sort()
   })
   
@@ -369,13 +376,13 @@ server <- function(input, output, session){
     start_year <- projections_start_after - 9
     
     # Full plot
-    output$plot_full <- highcharter::renderHighchart({
+    output$plot_full <- echarts4r::renderEcharts4r({
       df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
       server_create_debt_plot(df_long)
     })
     
     # Projection plot
-    output$plot_projection <- highcharter::renderHighchart({
+    output$plot_projection <- echarts4r::renderEcharts4r({
       df_long <- df_policy() %>%
         filter(year > projections_start_after) %>%
         server_prepare_shock_data(input$id_shock)
