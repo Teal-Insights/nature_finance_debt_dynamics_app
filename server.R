@@ -8,7 +8,37 @@ source(file = "components/server_prepare_shock_data.R")
 server <- function(input, output, session){
   df_countries <- imfweo::weo_list_countries() %>% 
     rename(iso3c = 'country_code',label = "country_name")
+  # card headers
+  output$selected_country_header_pb <- renderText({
+    input$id_country
+  })
   
+  output$selected_country_header_ir <- renderText({
+    input$id_country
+  })
+  
+  output$selected_country_header_gdp <- renderText({
+    input$id_country
+  })
+  
+  output$selected_country_header_ih <- renderText({
+    input$id_country
+  })
+  
+  output$selected_country_header_ip <- renderText({
+    input$id_country
+  })
+  output$selected_country_header_gh <- renderText({
+    input$id_country
+  })
+  
+  output$selected_country_header_gp <- renderText({
+    input$id_country
+  })
+  
+  output$selected_country_header_gt <- renderText({
+    input$id_country
+  })
   # get main data
   df_main <- reactive({
     country_iso3c <- df_countries %>% 
@@ -347,7 +377,7 @@ server <- function(input, output, session){
     output$download_projection <- downloadHandler(
       filename = function() {
         file_ext <- ifelse(input$file_type_projection == "CSV", ".csv", ".xlsx")
-        paste(input$id_country, "-", Sys.Date(), file_ext, sep = "")
+        paste(input$id_country, "-","Policy shock analysis","-", Sys.Date(), file_ext, sep = "")
       },
       content = function(file) {
         if (input$file_type_projection == "CSV") {

@@ -170,12 +170,11 @@ ui <- bslib::page_navbar(
           layout_column_wrap(
             width = 1/3,
             heights_equal = "row",
-            # Primary Balance Card
             card(
               full_screen = TRUE,
               card_header(
                 class = "bg-primary text-white",
-                "Primary Balance Shock"
+                tags$span(textOutput(outputId = "selected_country_header_pb", inline = TRUE),": Primary Balance Shock")
               ),
               ui_create_shock_table("pb")
             ),
@@ -184,7 +183,7 @@ ui <- bslib::page_navbar(
               full_screen = TRUE,
               card_header(
                 class = "bg-primary text-white",
-                "Real Interest Rate Shock"
+                tags$span(textOutput(outputId = "selected_country_header_ir", inline = TRUE),": Real Interest Rate Shock")
               ),
               ui_create_shock_table("ir")
             ),
@@ -194,7 +193,7 @@ ui <- bslib::page_navbar(
               full_screen = TRUE,
               card_header(
                 class = "bg-primary text-white",
-                "GDP Growth Shock"
+                tags$span(textOutput(outputId = "selected_country_header_gdp", inline = TRUE),": GDP Growth Shock")
               ),
               ui_create_shock_table("gdp")
             )
@@ -207,12 +206,16 @@ ui <- bslib::page_navbar(
             width = 1/2,
             bslib::card(
               full_screen = TRUE,
-              bslib::card_header("Historical Debt trends", class = "bg-primary text-white"),
+              bslib::card_header(
+                tags$span(textOutput(outputId = "selected_country_header_ih", inline = TRUE),": Historical Debt trends"), 
+                class = "bg-primary text-white"),
               echarts4r::echarts4rOutput(outputId = "plot_full_input")
             ),
             bslib::card(
               full_screen = TRUE,
-              bslib::card_header("Projected Debt trends", class = "bg-primary text-white"),
+              bslib::card_header(
+                tags$span(textOutput(outputId = "selected_country_header_ip", inline = TRUE),": Projected Debt trends"), 
+                class = "bg-primary text-white"),
               echarts4r::echarts4rOutput(outputId = "plot_projection_input")
             )
           )
@@ -253,19 +256,25 @@ ui <- bslib::page_navbar(
             width = 1/2,
             bslib::card(
               full_screen = TRUE,
-              bslib::card_header("Historical Debt trends", class = "bg-primary text-white"),
+              bslib::card_header(
+                tags$span(textOutput(outputId = "selected_country_header_gh", inline = TRUE),": Historical Debt trends"), 
+                class = "bg-primary text-white"),
               echarts4r::echarts4rOutput(outputId = "plot_full")
             ),
             bslib::card(
               full_screen = TRUE,
-              bslib::card_header("Projected Debt trends", class = "bg-primary text-white"),
+              bslib::card_header(
+                tags$span(textOutput(outputId = "selected_country_header_gp", inline = TRUE),": Projected Debt trends"), 
+                class = "bg-primary text-white"),
               echarts4r::echarts4rOutput(outputId = "plot_projection")
             )
           ),
           bslib::card(
             width = 1,
             full_screen = TRUE,
-            bslib::card_header("Shock analysis result table", class = "bg-primary text-white"),
+            bslib::card_header(
+              tags$span(textOutput(outputId = "selected_country_header_gt", inline = TRUE),": Shock analysis result table"), 
+              class = "bg-primary text-white"),
             DT::DTOutput(outputId = "data_projection")
           )
         )
