@@ -21,13 +21,13 @@ server <- function(input, output, session){
   
   # get country specific data
   df_specific <- reactive({
-    req(df_main(), year_when_estimations_start_after())
-    projections_start_after <- year_when_estimations_start_after()
+    req(df_main(), year_when_estimations_start())
+    projections_start_in <- year_when_estimations_start()
     
     df_start <- df_main() %>% 
       select(c(weo_country_code, iso3c, country_name, weo_subject_code, 
                subject_descriptor,units, scale, estimates_start_after, year, outcome)) %>% 
-      filter(year >= projections_start_after - 13)
+      filter(year >= projections_start_in - 13)
     
     df_compute <- df_start %>% 
       select(weo_subject_code, year, outcome) %>% 
@@ -69,22 +69,22 @@ server <- function(input, output, session){
   })
   
   # projections starts after - reactive
-  year_when_estimations_start_after <- reactive({
-    req(df_main())
+  year_when_estimations_start <- reactive({
+    req(df_main(),input$projection_year)
     
     # option: weo
-    start_value <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE) 
-    start_value + 0
+    # start_value <- df_main() %>% pull(estimates_start_after) %>% max(na.rm = TRUE) 
+    # start_value + 0
     
-    # option: current year
-    # lubridate::year(Sys.Date()) - 1
+    # option: current year or select year
+    as.numeric(input$projection_year)
   })
   # -------------------------------------------------------------------------
   # shocks analysis ---------------------------------------------------------
-  
+  # baseline data
   df_baseline <- reactive({
-    req(df_main(), df_specific(),year_when_estimations_start_after())
-    projections_start_after <- year_when_estimations_start_after()
+    req(df_main(), df_specific(),year_when_estimations_start())
+    projections_start_in <- year_when_estimations_start()
     
     df_specific() %>% 
       select(weo_subject_code, year, outcome) %>% 
@@ -92,43 +92,25 @@ server <- function(input, output, session){
       spread(key = weo_subject_code, value = outcome) %>% 
       mutate(
         gdp_growth = case_when(
-          year <= projections_start_after ~ NA, .default = gdp_growth
+          year < projections_start_in ~ NA, .default = gdp_growth
         ),
         GGXONLB_NGDP = case_when(
-          year <= projections_start_after ~ NA, .default = GGXONLB_NGDP
+          year < projections_start_in ~ NA, .default = GGXONLB_NGDP
         ),
         real_effective_rate = case_when(
-          year <= projections_start_after ~ NA, .default = real_effective_rate
+          year < projections_start_in ~ NA, .default = real_effective_rate
         )
       )
   })
-  
+  # policy shock analysis
   df_policy <- reactive({
     req(df_baseline(), reactive_shock_values(), 
-        year_when_estimations_start_after(),available_years())
+        year_when_estimations_start())
     
-    # Extract `projections_start_after`
-    projections_start_after <- year_when_estimations_start_after()
+    # Extract `projections_start_in`
+    projections_start_in <- year_when_estimations_start() - 1
     
-    # Determine `value_after`
-    value_after <- ifelse(
-      test = (projections_start_after == 2024),
-      yes = projections_start_after,
-      no = projections_start_after + 1
-    )
-    
-    # Create `df_new_shock`
-    new_pb_shock = reactive_shock_values()$pb
-    new_ir_shock = reactive_shock_values()$ir
-    new_gdp_shock = reactive_shock_values()$gdp
-    new_year = seq(from = value_after, by = 1, length.out = length(available_years()))
-    
-    df_new_shock <- data.frame(
-      year = new_year,
-      pb_shock = new_pb_shock,
-      ir_shock = new_ir_shock,
-      gdp_shock = new_gdp_shock
-    ) 
+    df_new_shock <- reactive_shock_values()
     
     # Join and mutate
     full_join(
@@ -144,13 +126,16 @@ server <- function(input, output, session){
       ) %>% 
       mutate(
         debt_PB_shock = case_when(
-          year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_PB_shock
+          year == projections_start_in ~ GGXWDG_NGDP, .default =  debt_PB_shock
         ),
         debt_Interest_shock = case_when(
-          year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_Interest_shock
+          year == projections_start_in ~ GGXWDG_NGDP, .default =  debt_Interest_shock
         ),
         debt_GDP_shock = case_when(
-          year == projections_start_after ~ GGXWDG_NGDP, .default =  debt_GDP_shock
+          year == projections_start_in ~ GGXWDG_NGDP, .default =  debt_GDP_shock
+        ),
+        debt_policy_shock = case_when(
+          year == projections_start_in ~ GGXWDG_NGDP, .default =  debt_policy_shock
         )
       ) %>% 
       mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2))) %>% 
@@ -169,11 +154,11 @@ server <- function(input, output, session){
   # input: ------------------------------------------------------------------
   # Get available years from the baseline data
   available_years <- reactive({
-    req(df_baseline(), year_when_estimations_start_after())
-    projections_start_after <- year_when_estimations_start_after()
+    req(df_baseline(), year_when_estimations_start())
+    projections_start_in <- year_when_estimations_start()
     
     df_baseline() %>%
-      filter(year > projections_start_after) %>%
+      filter(year >= projections_start_in) %>%
       pull(year) %>%
       unique() %>% 
       sort()
@@ -181,30 +166,30 @@ server <- function(input, output, session){
   
   # primary balance baseline data
   pb_data <- reactive({
-    req(df_baseline(), year_when_estimations_start_after()) 
-    projections_start_after <- year_when_estimations_start_after()
+    req(df_baseline(), year_when_estimations_start()) 
+    projections_start_in <- year_when_estimations_start()
     
     df_baseline() %>%
       select(year, value = GGXONLB_NGDP) %>%
-      filter(year > projections_start_after)
+      filter(year >= projections_start_in)
   })
   # Real interest rate baseline data
   ir_data <- reactive({
-    req(df_baseline(), year_when_estimations_start_after()) 
-    projections_start_after <- year_when_estimations_start_after()
+    req(df_baseline(), year_when_estimations_start()) 
+    projections_start_in <- year_when_estimations_start()
     
     df_baseline() %>%
       select(year, value = real_effective_rate) %>%
-      filter(year > projections_start_after)
+      filter(year >= projections_start_in)
   })
   # GDP baseline data
   gdp_data <- reactive({
-    req(df_baseline(), year_when_estimations_start_after()) 
-    projections_start_after <- year_when_estimations_start_after()
+    req(df_baseline(), year_when_estimations_start()) 
+    projections_start_in <- year_when_estimations_start()
     
     df_baseline() %>%
       select(year, value = gdp_growth) %>%
-      filter(year > projections_start_after)
+      filter(year >= projections_start_in)
   })
   
   # Helper function to convert dataframe to list
@@ -309,12 +294,18 @@ server <- function(input, output, session){
     years <- available_years()
     req(years)
     
-    # Create a named list for each shock type
-    list(
-      pb = setNames(shock_values$pb, years),
-      ir = setNames(shock_values$ir, years),
-      gdp = setNames(shock_values$gdp, years)
+    # Create a dataframe
+    data.frame(
+      year = years,
+      pb_shock = shock_values$pb,
+      ir_shock = shock_values$ir,
+      gdp_shock = shock_values$gdp
     )
+    # list(
+    #   pb = setNames(shock_values$pb, years),
+    #   ir = setNames(shock_values$ir, years),
+    #   gdp = setNames(shock_values$gdp, years)
+    # )
   })
   
   # -------------------------------------------------------------------------
@@ -325,9 +316,9 @@ server <- function(input, output, session){
     
     # Create reactive for processed data - shared across all conditions
     projection_processed_data <- reactive({
-      req(df_policy(), year_when_estimations_start_after())
-      projections_start_after <- year_when_estimations_start_after()
-      start_year <- projections_start_after - 9
+      req(df_policy(), year_when_estimations_start())
+      projections_start_in <- year_when_estimations_start()
+      start_year <- projections_start_in - 9
       
       df_policy() %>% 
         gather(key = indicators, value = outcome, -c("year")) %>% 
@@ -339,6 +330,7 @@ server <- function(input, output, session){
             indicators == "debt_GDP_shock" ~ "Debt Projection : GDP Shock",
             indicators == "debt_PB_shock" ~ "Debt Projection : Primary balance Shock",
             indicators == "debt_Interest_shock" ~ "Debt Projection : Real effective interest rate Shock",
+            indicators == "debt_policy_shock" ~ "Debt Projection : Policy Shock",
             indicators == "Baseline" ~ "Baseline Debt",
             TRUE ~ indicators
           )
@@ -355,8 +347,7 @@ server <- function(input, output, session){
     output$download_projection <- downloadHandler(
       filename = function() {
         file_ext <- ifelse(input$file_type_projection == "CSV", ".csv", ".xlsx")
-        paste(input$id_country, "-", input$id_shock, "-", "shock", "-", 
-              Sys.Date(), file_ext, sep = "")
+        paste(input$id_country, "-", Sys.Date(), file_ext, sep = "")
       },
       content = function(file) {
         if (input$file_type_projection == "CSV") {
@@ -370,9 +361,9 @@ server <- function(input, output, session){
   
   # Main observer code
   observe({
-    req(df_policy(), year_when_estimations_start_after())
-    projections_start_after <- year_when_estimations_start_after()
-    start_year <- projections_start_after - 9
+    req(df_policy(), year_when_estimations_start())
+    projections_start_in <- year_when_estimations_start()
+    start_year <- projections_start_in - 9
     
     # Full plot
     output$plot_full <- echarts4r::renderEcharts4r({
@@ -383,7 +374,21 @@ server <- function(input, output, session){
     # Projection plot
     output$plot_projection <- echarts4r::renderEcharts4r({
       df_long <- df_policy() %>%
-        filter(year > projections_start_after) %>%
+        filter(year >= projections_start_in) %>%
+        server_prepare_shock_data(input$id_shock)
+      server_create_debt_plot(df_long)
+    })
+    # input tab
+    # Full plot - input tab
+    output$plot_full_input <- echarts4r::renderEcharts4r({
+      df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
+      server_create_debt_plot(df_long)
+    })
+    
+    # Projection plot - input tab
+    output$plot_projection_input <- echarts4r::renderEcharts4r({
+      df_long <- df_policy() %>%
+        filter(year >= projections_start_in) %>%
         server_prepare_shock_data(input$id_shock)
       server_create_debt_plot(df_long)
     })
