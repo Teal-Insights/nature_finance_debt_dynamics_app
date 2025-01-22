@@ -21,14 +21,13 @@ server <- function(input, output, session){
   
   # get country specific data
   df_specific <- reactive({
-    req(df_main())
+    req(df_main(), year_when_estimations_start_after())
+    projections_start_after <- year_when_estimations_start_after()
+    
     df_start <- df_main() %>% 
       select(c(weo_country_code, iso3c, country_name, weo_subject_code, 
                subject_descriptor,units, scale, estimates_start_after, year, outcome)) %>% 
-      filter(year >= df_main() %>% 
-               pull(estimates_start_after) %>% 
-               unique() %>% 
-               max() - 13)
+      filter(year >= projections_start_after - 13)
     
     df_compute <- df_start %>% 
       select(weo_subject_code, year, outcome) %>% 
@@ -133,8 +132,8 @@ server <- function(input, output, session){
     
     # Join and mutate
     full_join(
-      x = df_baseline(),
-      y = df_new_shock,
+      x = df_baseline() %>% mutate(year = as.integer(year)),
+      y = df_new_shock %>% mutate(year = as.integer(year)),
       by = "year"
     ) %>%
       mutate(
