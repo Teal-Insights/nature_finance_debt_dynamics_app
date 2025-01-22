@@ -2,7 +2,7 @@
 # starts: -----------------------------------------------------------------
 server_prepare_shock_data <- function(df_policy, shock_type, start_year = NULL) {
   shock_columns <- list(
-    "All" = c(
+    "Policy shock" = c(
       "Baseline",
       "Debt Projection : Policy Shock" = "debt_policy_shock"
     ),
