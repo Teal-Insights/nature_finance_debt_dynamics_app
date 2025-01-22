@@ -1,36 +1,36 @@
 
 # starts ------------------------------------------------------------------
 server_create_debt_plot <- function(df_long) {
-  highchart() %>%
-    hc_chart(type = "line") %>%
-    hc_xAxis(
-      categories = unique(df_long$year)
+  # Get min value for y-axis (rounded down to nearest whole number)
+  y_min <- floor(min(df_long$outcome))
+  
+  df_long %>%
+    group_by(indicator) %>%
+    e_charts(year) %>%
+    e_line(outcome) %>%
+    e_x_axis(
+      name = "",
+      type = "category"
     ) %>%
-    hc_yAxis(
-      title = list(text = "Debt (% of GDP)")
+    e_y_axis(
+      name = "Debt (% of GDP)",
+      scale = TRUE,          # This ensures axis starts from min value
+      min = y_min           # Set minimum value
     ) %>%
-    hc_add_series_list(
-      lapply(unique(df_long$indicator), function(ind) {
-        data <- df_long %>% 
-          filter(indicator == ind) %>% 
-          select(outcome) %>% 
-          pull()
-        
-        list(
-          name = ind,
-          data = data
-        )
-      })
+    e_legend(
+      top = "0",
+      orient = "horizontal",
+      x = "center"
     ) %>%
-    hc_legend(
-      align = "center",
-      verticalAlign = "top",
-      layout = "horizontal"
+    e_tooltip(
+      trigger = "axis",
+      axisPointer = list(
+        type = "cross"
+      )
     ) %>%
-    hc_title(text = "") %>%
-    hc_tooltip(
-      crosshairs = TRUE,
-      shared = TRUE
+    e_grid(
+      containLabel = TRUE,
+      top = "15%"
     )
 }
 
