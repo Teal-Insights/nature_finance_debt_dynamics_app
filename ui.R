@@ -33,6 +33,7 @@ projection_years <- seq(from = current_year, by = 1, length.out = 4)
 ui <- bslib::page_navbar(
   # Initialize shinyjs
   shinyjs::useShinyjs(),  
+  bg = "#2c3e50",
   title = div(
     style = "display: flex; align-items: center;",
     tags$img(
@@ -130,7 +131,8 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          hr(),
+          title = "Filters",
+          bg = "#2c3e50",
           # Select Country
           shinyWidgets::pickerInput(
             inputId = "id_country",
@@ -231,6 +233,8 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
+          title = "Filters",
+          bg = "#2c3e50",
           # Shock selection
           hr(),
           shinyWidgets::pickerInput(
