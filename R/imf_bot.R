@@ -4,6 +4,8 @@
 suppressPackageStartupMessages({
   library(tidyverse)
   library(imfweo)
+  library(echarts4r)
+  library(plotly)
   library(highcharter)
 })
 # loading necessary Rscripts
@@ -13,7 +15,7 @@ source(file = "R/imf_format_years.R")
 
 # api call: ---------------------------------------------------------------
 df_main <- imf_key_data() %>% 
-  filter(iso3c == "KEN")
+  filter(iso3c == "THA")
 
 
 # full data: --------------------------------------------------------------
@@ -153,6 +155,33 @@ highchart() %>%
   hc_tooltip(
     crosshairs = TRUE,
     shared = TRUE
+  )
+
+#  plotly 
+plot_ly(data = df_long, 
+        x = ~year, 
+        y = ~outcome, 
+        color = ~indicator, 
+        type = 'scatter', 
+        mode = 'lines+markers',  # This adds both lines and points
+        marker = list(size = 8),  # Customize point size
+        line = list(width = 1)) %>%  # Customize line width
+  plotly::layout(
+    xaxis = list(
+      title = "Year",
+      categoryorder = "array",
+      categoryarray = unique(df_long$year)
+    ),
+    yaxis = list(
+      title = "Debt (% of GDP)"
+    ),
+    legend = list(
+      orientation = "h",
+      y = 1.1,
+      x = 0.5,
+      xanchor = "center"
+    ),
+    hovermode = "x unified"
   )
 
 # First reshape the data (if not already done)
