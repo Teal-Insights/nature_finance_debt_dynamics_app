@@ -219,12 +219,12 @@ ui <- bslib::page_navbar(
             bslib::card(
               full_screen = TRUE,
               bslib::card_header("Historical Debt trends", class = "bg-primary text-white"),
-              highcharter::highchartOutput(outputId = "plot_full")
+              echarts4r::echarts4rOutput(outputId = "plot_full")
             ),
             bslib::card(
               full_screen = TRUE,
               bslib::card_header("Projected Debt trends", class = "bg-primary text-white"),
-              highcharter::highchartOutput(outputId = "plot_projection")
+              echarts4r::echarts4rOutput(outputId = "plot_projection")
             )
           ),
           bslib::card(
