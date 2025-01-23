@@ -20,14 +20,22 @@ df_main <- imf_key_data() %>%
 
 # full data: --------------------------------------------------------------
 # projections_start_after <- df_main %>% pull(estimates_start_after) %>% max(na.rm = TRUE) + 2
-projections_start_after <- 2026
+projections_start_after <- 2025
 
+df_template <- df_main %>% 
+  select(c(iso3c, country_name, weo_subject_code, 
+           subject_descriptor,units, scale, estimates_start_after, year, 
+           outcome)) %>% 
+  filter(year > (projections_start_after - 11)) %>% 
+  spread(key = year, value = outcome) %>% 
+  arrange(units) %>% 
+  select(-estimates_start_after)
+  
 df_specific <- df_main %>% 
   select(c(weo_country_code, iso3c, country_name, weo_subject_code, 
            subject_descriptor,units, scale, estimates_start_after, year, 
            outcome)) %>% 
-  filter(year >= (projections_start_after - 13)
-  )
+  filter(year >= (projections_start_after - 13))
 
 df_long <- df_specific %>% 
   spread(key = year, value = outcome) %>% 

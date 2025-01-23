@@ -26,8 +26,7 @@ imf_key_data <- function(){
     dplyr::select(-country) %>% 
     filter(
       weo_subject_code %in% c(
-        "NGDP","GGXONLB","GGR","GGX","GGXWDG",
-        "GGXONLB_NGDP","GGR_NGDP","GGX_NGDP","GGXWDG_NGDP"
+        "NGDP","GGXONLB_NGDP","GGXWDG_NGDP"
       )
     )
   
