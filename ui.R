@@ -37,20 +37,20 @@ ui <- bslib::page_navbar(
   title = div(
     style = "display: flex; align-items: center;",
     tags$img(
-      src = "logo.png", 
-      height = "40px", 
-      style = "margin-right: 10px; border-radius: 50%;"
+      # src = "logo.png", 
+      height = "20px", 
+      style = "margin-right: 10px; border-radius: 50%"
     ),
     span(
       "Public Debt Policy shock analysis",
-      style = "font-weight: bold;"
+      style = "font-weight: bold; position: absolute; top: 50%; transform: translateY(-50%);"
     )
   ),
   header = div(  # This will stay at the top
-    div(
-      style = "text-align: center; font-weight: bold; font-size: 20px; color: red; margin-bottom: 0px;",
-      "This app is under development"
-    )
+    # div(
+    #   style = "text-align: center; font-weight: bold; font-size: 20px; color: red; margin-bottom: 0px;",
+    #   "This app is under development"
+    # )
   ),
   tags$head(
     tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
@@ -236,7 +236,6 @@ ui <- bslib::page_navbar(
           title = "Filters",
           bg = "#2c3e50",
           # Shock selection
-          hr(),
           shinyWidgets::pickerInput(
             inputId = "id_shock",
             label = "Select shock",
@@ -273,13 +272,21 @@ ui <- bslib::page_navbar(
               echarts4r::echarts4rOutput(outputId = "plot_projection")
             )
           ),
-          bslib::card(
+          card(
             width = 1,
             full_screen = TRUE,
             bslib::card_header(
               tags$span(textOutput(outputId = "selected_country_header_gt", inline = TRUE),": Shock analysis result table"), 
               class = "bg-primary text-white"),
-            DT::DTOutput(outputId = "data_projection")
+            card_body(
+              div(
+                class = "table-container",
+                div(
+                  class = "table-responsive",
+                  DT::DTOutput(outputId = "data_projection")
+                )
+              )
+            )
           )
         )
       )
@@ -292,8 +299,9 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          hr(),
-          selectInput("data_format", "Select: Data format", choices = c("Wide", "Long")),
+          title = "Filters",
+          bg = "#2c3e50",
+          selectInput("data_format", "Display data", choices = c("Wide", "Long")),
           hr(),
           selectInput("file_type", "Select: File Type", choices = c("CSV", "Excel")),
           hr(),
@@ -301,8 +309,16 @@ ui <- bslib::page_navbar(
           hr()
         ),
         bslib::layout_column_wrap(
-          bslib::card(
-            DT::DTOutput(outputId = "full_data")
+          card(
+            card_body(
+              div(
+                class = "table-container",
+                div(
+                  class = "table-responsive",
+                  DTOutput("full_data")
+                )
+              )
+            )
           )
         )
       )
