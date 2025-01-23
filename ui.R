@@ -25,14 +25,17 @@ select_country <- df_countries %>%
   filter(!is.na(label)) %>% 
   pull(label) %>% 
   unique() %>% 
-  sort()
+  gsub(pattern = "The ", x = ., replacement = "") %>% 
+  sort() 
+
 # projection year
 current_year <- lubridate::year(Sys.Date())
 projection_years <- seq(from = current_year, by = 1, length.out = 4)
 # ui ----------------------------------------------------------------------
 ui <- bslib::page_navbar(
   # Initialize shinyjs
-  shinyjs::useShinyjs(),  
+  shinyjs::useShinyjs(), 
+  # nav section background colour
   bg = "#2c3e50",
   title = div(
     style = "display: flex; align-items: center;",
@@ -131,7 +134,7 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          title = "Filters",
+          # sidebar section background colour
           bg = "#2c3e50",
           # Select Country
           shinyWidgets::pickerInput(
@@ -163,6 +166,35 @@ ui <- bslib::page_navbar(
               liveSearchPlaceholder = "Search year..."
             ),
             multiple = FALSE
+          ),
+          hr(),
+          # Guidance text with custom styling
+          tags$div(
+            class = "guide-box p-3 mb-3 border rounded",
+            tags$p(
+              h5(icon("info-circle"), 
+                 "Overview:"),
+              class = "fw-bold"
+            ),
+            tags$ul(
+              tags$li(
+                "Key indicators in debt projections are ",tags$b("Primary balance")," , ",
+                tags$b("Real effective interest rate"), " and ", tags$b("GDP growth. "),
+                "All these indicators are in ",tags$b("%.")
+              ),
+              tags$li(
+                "Navigate to the policy shock column under each indicator",
+                tags$br(),
+                tags$span(
+                  "Look for ", 
+                  tags$b("input boxes"),
+                  " to modify shock values."
+                )
+              ),
+              tags$li(
+                "Final shock is the sum of ",tags$b("baseline")," values plus ",tags$b("policy")," shock values"
+              )
+            )
           ),
           hr()
         ),
@@ -233,7 +265,7 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          title = "Filters",
+          # sidebar background colour
           bg = "#2c3e50",
           # Shock selection
           shinyWidgets::pickerInput(
@@ -299,7 +331,7 @@ ui <- bslib::page_navbar(
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          title = "Filters",
+          # sidebar background colour
           bg = "#2c3e50",
           selectInput("data_format", "Display data", choices = c("Wide", "Long")),
           hr(),
