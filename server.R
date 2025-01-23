@@ -42,6 +42,7 @@ server <- function(input, output, session){
   # get main data
   df_main <- reactive({
     country_iso3c <- df_countries %>% 
+      mutate(label = gsub(pattern = "The ", x = label, replacement = "")) %>% 
       filter(label %in% c(input$id_country)) %>% 
       pull(iso3c)
     
@@ -271,7 +272,7 @@ server <- function(input, output, session){
             column(3, div(style = "padding-top: 7px;", 
                           textOutput(sprintf("%s_%d_coef", shock_id, year)))),
             column(4, numericInput(sprintf("%s_%d_avg", shock_id, year), 
-                                   NULL, value = 0.1, step = 0.05)),
+                                   NULL, value = 0, step = 0.05)),
             column(3, textOutput(sprintf("%s_%d_score", shock_id, year)))
           )
         )
