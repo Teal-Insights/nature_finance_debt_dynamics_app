@@ -282,6 +282,9 @@ ui <- bslib::page_navbar(
           hr(),
           selectInput("file_type_projection", "Select: File Type", choices = c("CSV", "Excel")),
           downloadButton("download_projection", "Download Data"),
+          hr(),
+          h6("Excel Template"),
+          downloadButton("download_template", "Download Template"),
           hr()
         ),
         bslib::layout_column_wrap(

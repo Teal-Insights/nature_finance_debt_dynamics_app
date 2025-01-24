@@ -15,7 +15,7 @@ source(file = "R/imf_format_years.R")
 
 # api call: ---------------------------------------------------------------
 df_main <- imf_key_data() %>% 
-  filter(iso3c == "THA")
+  filter(iso3c == "KEN")
 
 
 # full data: --------------------------------------------------------------

@@ -3,6 +3,7 @@
 # loading necessary components
 source(file = "components/server_create_debt_plot.R")
 source(file = "components/server_prepare_shock_data.R")
+source(file = "components/server_excel_template.R")
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session){
@@ -389,6 +390,15 @@ server <- function(input, output, session){
       }
     )
   })
+  # download handler for excel template
+  output$download_template <- downloadHandler(
+    filename = function() {
+      paste0(input$id_country, "-Policy shock","-template","-", Sys.Date(), ".xlsx")
+    },
+    content = function(file) {
+      server_excel_template(file, df_main)
+    }
+  )
   
   # Main observer code
   observe({
