@@ -128,9 +128,9 @@ ui <- bslib::page_navbar(
       }
     "),
   
-  # Input Panel
+  # Home Panel
   bslib::nav_panel(
-    title = "Input",
+    title = "Home",
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
@@ -204,6 +204,15 @@ ui <- bslib::page_navbar(
           layout_column_wrap(
             width = 1/3,
             heights_equal = "row",
+            # GDP Growth Card
+            card(
+              full_screen = TRUE,
+              card_header(
+                class = "bg-primary text-white",
+                tags$span(textOutput(outputId = "selected_country_header_gdp", inline = TRUE),": GDP Growth Shock")
+              ),
+              ui_create_shock_table("gdp")
+            ),
             card(
               full_screen = TRUE,
               card_header(
@@ -220,16 +229,6 @@ ui <- bslib::page_navbar(
                 tags$span(textOutput(outputId = "selected_country_header_ir", inline = TRUE),": Real Interest Rate Shock")
               ),
               ui_create_shock_table("ir")
-            ),
-            
-            # GDP Growth Card
-            card(
-              full_screen = TRUE,
-              card_header(
-                class = "bg-primary text-white",
-                tags$span(textOutput(outputId = "selected_country_header_gdp", inline = TRUE),": GDP Growth Shock")
-              ),
-              ui_create_shock_table("gdp")
             )
           )
         ),

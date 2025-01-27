@@ -4,42 +4,16 @@
 source(file = "components/server_create_debt_plot.R")
 source(file = "components/server_prepare_shock_data.R")
 source(file = "components/server_excel_template.R")
+source(file = "components/server_create_country_headers.R")
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session){
   df_countries <- imfweo::weo_list_countries() %>% 
     rename(iso3c = 'country_code',label = "country_name")
-  # card headers
-  output$selected_country_header_pb <- renderText({
-    input$id_country
-  })
   
-  output$selected_country_header_ir <- renderText({
-    input$id_country
-  })
+  # Call the header component
+  server_create_country_headers(id = "id", output = output, input = input)
   
-  output$selected_country_header_gdp <- renderText({
-    input$id_country
-  })
-  
-  output$selected_country_header_ih <- renderText({
-    input$id_country
-  })
-  
-  output$selected_country_header_ip <- renderText({
-    input$id_country
-  })
-  output$selected_country_header_gh <- renderText({
-    input$id_country
-  })
-  
-  output$selected_country_header_gp <- renderText({
-    input$id_country
-  })
-  
-  output$selected_country_header_gt <- renderText({
-    input$id_country
-  })
   # get main data
   df_main <- reactive({
     country_iso3c <- df_countries %>% 
@@ -419,14 +393,14 @@ server <- function(input, output, session){
         server_prepare_shock_data(input$id_shock)
       server_create_debt_plot(df_long)
     })
-    # input tab
-    # Full plot - input tab
+    # home tab
+    # Full plot - home tab
     output$plot_full_input <- echarts4r::renderEcharts4r({
       df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
       server_create_debt_plot(df_long)
     })
     
-    # Projection plot - input tab
+    # Projection plot - home tab
     output$plot_projection_input <- echarts4r::renderEcharts4r({
       df_long <- df_policy() %>%
         filter(year >= projections_start_in) %>%
