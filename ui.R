@@ -363,104 +363,102 @@ ui <- bslib::page_navbar(
   # Documentation Panel
   bslib::nav_panel(
     title = "Documentation",
-    
-    # Main container
-    card(
-      height = "100%",
-      full_screen = TRUE,
-      card_header(
-        class = "bg-primary text-white",
-        h2("Debt Dynamics Under Uncertainty")
-      ),
-      
+    # overview header card
       card_body(
         div(
           class = "container",
-          
           # Overview section
           card(
-            card_header(
-              class = "bg-light",
-              h4("Overview")
-            ),
-            card_body(
-              div(
-                class = "row-bordered",
-                tags$div(
-                  h4("Debt Dynamics Under Uncertainty", style = "font-weight: bold;"),
-                  p("Debt dynamics under uncertainty examines how sovereign debt evolves in the face of unpredictable economic, financial, and geopolitical factors. This framework considers the complex interplay between macroeconomic variables such as real GDP growth, interest rates, exchange rates, fiscal balances, and the stochastic shocks that can disrupt their trajectories."),
-                  p("Uncertainty in debt dynamics arises from external and domestic sources. External factors include volatile global financial markets, fluctuating commodity prices, and changes in international monetary policies. Domestic challenges might involve political instability, natural disasters, or unexpected revenue shortfalls. These uncertainties complicate forecasting and policy formulation, making debt sustainability assessments a probabilistic exercise rather than a deterministic one."),
-                  p("Key analytical tools in this field include stochastic simulations, scenario analysis, and Value-at-Risk (VaR) models, which estimate the probability of adverse debt outcomes under different scenarios. These methods help policymakers assess the likelihood of crossing critical thresholds, such as unsustainable debt-to-GDP ratios, and identify vulnerabilities in public debt portfolios."),
-                  p("Effective debt management under uncertainty relies on adopting strategies that enhance resilience. This includes maintaining fiscal buffers, diversifying the debt portfolio, extending maturities, and linking debt to real economic performance through innovative instruments like GDP-linked bonds."),
-                  p("Understanding debt dynamics under uncertainty is crucial for developing robust debt policies that minimize default risks and maintain access to capital markets. It also informs international stakeholders, such as the IMF and World Bank, in designing tailored support programs for vulnerable economies."),
-                  p("By integrating uncertainty into debt analysis, governments can prepare for adverse scenarios, optimize policy responses, and align debt strategies with long-term development objectives, promoting macroeconomic stability and fiscal sustainability.")
-                )
-              )
-            )
-          ),
-          
-          # Formula section
-          card(
             class = "mt-4",
-            card_header(
-              class = "bg-light",
-              h4("Key Equations")
-            ),
+            card_header(class = "bg-light", h4("Overview")),
             card_body(
               withMathJax(
                 HTML("
-                <div class='math-section'>
-                  <h5>Primary Debt Dynamics Equation:</h5>
-                  \\[ \\Delta d_t = \\frac{r_t - g_t}{1 + g_t}d_{t-1} - pb_t + dda_t + \\epsilon_t \\]
+                  <div class='math-section'>
+                     <p>The projection of debt-to-GDP ratio using the debt dynamics equation provides a systematic framework for analyzing how public debt evolves over time under different macroeconomic conditions and policy scenarios. This approach begins with baseline values derived from historical data and IMF World Economic Outlook projections, which include the real effective interest rate, GDP growth rate, and primary balance. These baseline values represent the starting point for understanding the expected trajectory of public debt under current conditions and policies.</p>
                   
-                  <h5>Where:</h5>
-                  <ul>
-                    <li>\\( d_t \\) = debt-to-GDP ratio at time t</li>
-                    <li>\\( r_t \\) = real interest rate</li>
-                    <li>\\( g_t \\) = real GDP growth rate</li>
-                    <li>\\( pb_t \\) = primary balance ratio to GDP</li>
-                    <li>\\( dda_t \\) = deficit-debt adjustments</li>
-                    <li>\\( \\epsilon_t \\) = stochastic shock term</li>
-                  </ul>
+                     <p>To assess the impact of various policy interventions or economic shocks, the framework incorporates policy shock values that can be applied to each of the key variables. These shock values represent deviations from the baseline scenario and can be positive or negative, allowing for the analysis of both favorable and adverse scenarios. For instance, policymakers might want to examine how an increase in interest rates, a slowdown in economic growth, or a change in fiscal policy affecting the primary balance would impact debt sustainability.</p>
                   
-                  <h5>Uncertainty Components:</h5>
-                  \\[ \\epsilon_t \\sim N(0, \\sigma^2) \\]
-                  \\[ \\sigma^2 = \\sum_{i=1}^{n} w_i \\sigma_i^2 \\]
-                </div>
-              ")
+                     <p>The final shock values are then calculated by combining the baseline values with their respective policy shock values. These final values capture the total effect of both the existing economic conditions and the proposed policy changes or external shocks. By inputting these final shocked values into the debt dynamics equation, analysts can generate projections of the debt-to-GDP ratio that reflect the combined impact of baseline conditions and policy interventions. This comprehensive approach enables policymakers to evaluate different policy options and their implications for debt sustainability, making it an invaluable tool for fiscal policy planning and debt management strategies. The resulting projections help identify potential risks to debt sustainability and inform decisions about necessary policy adjustments to maintain debt at sustainable levels.</p>
+                   </div>
+               ")
               )
             )
           ),
-          
-          # Methodology section
+          # Key equation header card
           card(
             class = "mt-4",
-            card_header(
-              class = "bg-light",
-              h4("Methodology")
-            ),
+            card_header(class = "bg-light", h4("Key Equation")),
             card_body(
-              tags$div(
-                h5("Stochastic Simulation Approach"),
-                p("The analysis employs Monte Carlo simulations to generate multiple debt trajectories:"),
-                tags$ol(
-                  tags$li("Generate random shocks for key variables (growth, interest rates, primary balance)"),
-                  tags$li("Simulate debt paths using the primary equation"),
-                  tags$li("Calculate confidence intervals and fan charts"),
-                  tags$li("Assess probability of debt exceeding specific thresholds")
-                ),
-                
-                h5("Key Assumptions", class = "mt-4"),
-                p("The model assumes:"),
-                tags$ul(
-                  tags$li("Normally distributed shocks"),
-                  tags$li("Constant variance-covariance structure"),
-                  tags$li("No structural breaks in relationships")
-                )
+              withMathJax(
+                HTML("
+                  <div class='math-section'>
+                    <h5>Debt Dynamics Equation:</h5>
+                    \\[ d_t = \\frac{(1 + r_t)}{(1 + g_t)}d_{t-1} - pb_t \\]
+                    
+                    <h5>Where:</h5>
+                    <ul>
+                      <li>\\( d_t \\) = public-debt-to-GDP ratio at time t</li>
+                      <li>\\( r_t \\) = real effective interest rate</li>
+                      <li>\\( g_t \\) = real GDP growth rate</li>
+                      <li>\\( pb_t \\) = primary-balance-to-GDP ratio</li>
+                      <li>\\( t \\) = time period</li>
+                    </ul>
+                  </div>
+                  ")
               )
             )
+          ),
+          # Methodology header card
+          card(
+            class = "mt-4",
+            card_header(class = "bg-light", h4("Methodology")),
+            card_body(
+              withMathJax(HTML("
+               <div class='math-section'>
+                 <p>The computation process for debt dynamics analysis is fundamentally grounded in three essential variables obtained from the IMF World Economic Outlook database: Gross domestic product at current prices, General government primary net lending/borrowing (primary balance), and General government gross debt. This comprehensive framework enables researchers and policymakers to analyze the evolution of public debt over time, taking into account the complex interplay between economic growth, interest rates, and fiscal policy decisions. The methodology's strength lies in its ability to decompose debt dynamics into its constituent components, allowing for a detailed understanding of how different macroeconomic factors contribute to changes in the debt-to-GDP ratio.</p>
+                 <h5>An imfweo R package</h5>
+                 <p>The <code>imfweo</code> R package, developed by <a href='https://github.com/Teal-Insights/imfweo' target = '_blank'>Teal-Insights</a>, represents a significant advancement in accessing and analyzing IMF World Economic Outlook (WEO) data. This package streamlines the process of retrieving and working with WEO data directly within the R programming environment, making it particularly valuable for economists, researchers, and policy analysts. The package offers functionality to download data from various WEO releases, handle multiple variables across different countries and time periods, and process the data into formats suitable for analysis. Despite being a minimum viable product under active development, it already provides essential features such as automatic data updating, efficient data transformation, and compatibility with common R data manipulation packages. The package's architecture is designed to accommodate future enhancements while maintaining a user-friendly interface that simplifies the often complex task of working with international economic data. For researchers conducting debt dynamics analysis or broader macroeconomic studies, <code>imfweo</code> serves as a valuable tool that reduces the technical barriers to accessing and utilizing IMF WEO data.</p>
+                 <h5>Key Equations:</h5>
+                 
+                 <h6>1. Main Debt Dynamics Equation:</h6>
+                 \\[ \\tag{1} d_t = \\frac{1 + r_t}{1 + g_t}d_{t-1} - pb_t \\]
+                 
+                 <h6>2. GDP Growth Rate Calculation:</h6>
+                 \\[ \\tag{2} g_t = \\frac{GDP_t - GDP_{t-1}}{GDP_{t-1}} \\times 100 \\]
+                 
+                 <h6>3. Real Effective Interest Rate Derivation:</h6>
+                 \\[ \\tag{3} r_t = \\frac{(d_t + pb_t)(1 + g_t)}{d_{t-1}} - 1 \\]
+                 
+                 <h6>4. Final Shock Calculations:</h6>
+                 \\[ \\tag{4a} r_t^{final} = r_t^{baseline} + r_t^{shock} \\]
+                 \\[ \\tag{4b} g_t^{final} = g_t^{baseline} + g_t^{shock} \\]
+                 \\[ \\tag{4c} pb_t^{final} = pb_t^{baseline} + pb_t^{shock} \\]
+                 
+                 <h5>Where:</h5>
+                 <ul>
+                   <li>\\( d_t \\) = public-debt-to-GDP ratio at time t</li>
+                   <li>\\( r_t \\) = real effective interest rate</li>
+                   <li>\\( g_t \\) = real GDP growth rate</li>
+                   <li>\\( pb_t \\) = primary-balance-to-GDP ratio</li>
+                   <li>\\( GDP_t \\) = Gross Domestic Product at time t</li>
+                   <li>\\( r_t^{final}, g_t^{final}, pb_t^{final} \\) = final shocked values</li>
+                   <li>\\( r_t^{baseline}, g_t^{baseline}, pb_t^{baseline} \\) = baseline values</li>
+                   <li>\\( r_t^{shock}, g_t^{shock}, pb_t^{shock} \\) = policy shock values</li>
+                 </ul>
+                 
+                 <h5>Computation of GDP Growth Rate:</h5>
+                 <p>The analytical process begins with calculating the GDP growth rate using current price GDP data through equation (2). This calculation is crucial as it captures the economy's expansion or contraction over time, which directly impacts debt sustainability. The growth rate calculation uses GDP values from consecutive periods to measure the percentage change in economic output. This rate serves as a fundamental indicator of the economy's capacity to generate resources and manage its debt burden, making it a critical component in assessing long-term debt sustainability and fiscal policy effectiveness.</p>
+                 
+                 <h5>Computation of Real Effective Interest Rate:</h5>
+                 <p>The real effective interest rate (\\(r_t\\)) computation, represented in equation (3), employs a backward calculation approach utilizing the debt dynamics equation. This derivation is made possible by having access to actual debt levels, calculated GDP growth rates, and primary balances from historical data. The methodology involves rearranging the original debt dynamics equation to isolate the interest rate term, thereby revealing the implicit rate that would have generated the observed changes in debt ratios. This approach captures the effective cost of borrowing faced by the government across its entire debt portfolio, incorporating various maturities, currencies, and interest rate structures.</p>
+                 
+                 <h5>Debt Projection:</h5>
+                 <p>The final projection methodology incorporates policy shocks through equations (4a), (4b), and (4c), where baseline values for real effective interest rates, GDP growth, and primary balance are adjusted by user-specified shock values. These shock calculations are performed in percentage terms, with the final shocked values representing the sum of baseline and policy shock values for each respective variable. The resulting final values (\\(r_t^{final}, g_t^{final}, pb_t^{final}\\)) are then input into the main debt dynamics equation (1) to generate the debt projection under the specified shock scenario. This approach allows for a comprehensive analysis of how policy changes or external shocks might affect debt sustainability, providing policymakers with valuable insights for debt management and fiscal policy decisions.</p>
+               </div>
+             "))
+            )
           )
-        )
       )
     )
   ),
