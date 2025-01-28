@@ -275,8 +275,7 @@ ui <- bslib::page_navbar(
               actionsBox = TRUE,
               size = 10,
               selectedTextFormat = "count > 3"
-            ),
-            multiple = FALSE
+            )
           ),
           hr(),
           selectInput("file_type_projection", "Select: File Type", choices = c("CSV", "Excel")),
@@ -299,6 +298,7 @@ ui <- bslib::page_navbar(
               echarts4r::echarts4rOutput(outputId = "plot_full")
             ),
             bslib::card(
+              width = 1,
               full_screen = TRUE,
               bslib::card_header(
                 tags$span(textOutput(outputId = "selected_country_header_gp", inline = TRUE),": Projected Debt trends"), 
