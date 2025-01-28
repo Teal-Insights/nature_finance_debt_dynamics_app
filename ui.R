@@ -256,8 +256,8 @@ ui <- bslib::page_navbar(
       )
     )
   ),
-
-# Graph panel: ------------------------------------------------------------
+  
+  # Graph panel: ------------------------------------------------------------
   # Graph Panel
   bslib::nav_panel(
     title = "Graph",
@@ -363,16 +363,16 @@ ui <- bslib::page_navbar(
   bslib::nav_panel(
     title = "Documentation",
     # overview header card
-      card_body(
-        div(
-          class = "container",
-          # Overview section
-          card(
-            class = "mt-4",
-            card_header(class = "bg-light", h4("Overview")),
-            card_body(
-              withMathJax(
-                HTML("
+    card_body(
+      div(
+        class = "container",
+        # Overview section
+        card(
+          class = "mt-4",
+          card_header(class = "bg-light", h4("Overview")),
+          card_body(
+            withMathJax(
+              HTML("
                   <div class='math-section'>
                      <p>The projection of debt-to-GDP ratio using the debt dynamics equation provides a systematic framework for analyzing how public debt evolves over time under different macroeconomic conditions and policy scenarios. This approach begins with baseline values derived from historical data and IMF World Economic Outlook projections, which include the real effective interest rate, GDP growth rate, and primary balance. These baseline values represent the starting point for understanding the expected trajectory of public debt under current conditions and policies.</p>
                   
@@ -381,16 +381,16 @@ ui <- bslib::page_navbar(
                      <p>The final shock values are then calculated by combining the baseline values with their respective policy shock values. These final values capture the total effect of both the existing economic conditions and the proposed policy changes or external shocks. By inputting these final shocked values into the debt dynamics equation, analysts can generate projections of the debt-to-GDP ratio that reflect the combined impact of baseline conditions and policy interventions. This comprehensive approach enables policymakers to evaluate different policy options and their implications for debt sustainability, making it an invaluable tool for fiscal policy planning and debt management strategies. The resulting projections help identify potential risks to debt sustainability and inform decisions about necessary policy adjustments to maintain debt at sustainable levels.</p>
                    </div>
                ")
-              )
             )
-          ),
-          # Key equation header card
-          card(
-            class = "mt-4",
-            card_header(class = "bg-light", h4("Key Equation")),
-            card_body(
-              withMathJax(
-                HTML("
+          )
+        ),
+        # Key equation header card
+        card(
+          class = "mt-4",
+          card_header(class = "bg-light", h4("Key Equation")),
+          card_body(
+            withMathJax(
+              HTML("
                   <div class='math-section'>
                     <h5>Debt Dynamics Equation:</h5>
                     \\[ d_t = \\frac{(1 + r_t)}{(1 + g_t)}d_{t-1} - pb_t \\]
@@ -405,15 +405,15 @@ ui <- bslib::page_navbar(
                     </ul>
                   </div>
                   ")
-              )
             )
-          ),
-          # Methodology header card
-          card(
-            class = "mt-4",
-            card_header(class = "bg-light", h4("Methodology")),
-            card_body(
-              withMathJax(HTML("
+          )
+        ),
+        # Methodology header card
+        card(
+          class = "mt-4",
+          card_header(class = "bg-light", h4("Methodology")),
+          card_body(
+            withMathJax(HTML("
                <div class='math-section'>
                  <p>The computation process for debt dynamics analysis is fundamentally grounded in three essential variables obtained from the IMF World Economic Outlook database: Gross domestic product at current prices, General government primary net lending/borrowing (primary balance), and General government gross debt. This comprehensive framework enables researchers and policymakers to analyze the evolution of public debt over time, taking into account the complex interplay between economic growth, interest rates, and fiscal policy decisions. The methodology's strength lies in its ability to decompose debt dynamics into its constituent components, allowing for a detailed understanding of how different macroeconomic factors contribute to changes in the debt-to-GDP ratio.</p>
                  <h5>An imfweo R package</h5>
@@ -456,8 +456,8 @@ ui <- bslib::page_navbar(
                  <p>The final projection methodology incorporates policy shocks through equations (4a), (4b), and (4c), where baseline values for real effective interest rates, GDP growth, and primary balance are adjusted by user-specified shock values. These shock calculations are performed in percentage terms, with the final shocked values representing the sum of baseline and policy shock values for each respective variable. The resulting final values (\\(r_t^{final}, g_t^{final}, pb_t^{final}\\)) are then input into the main debt dynamics equation (1) to generate the debt projection under the specified shock scenario. This approach allows for a comprehensive analysis of how policy changes or external shocks might affect debt sustainability, providing policymakers with valuable insights for debt management and fiscal policy decisions.</p>
                </div>
              "))
-            )
           )
+        )
       )
     )
   ),
