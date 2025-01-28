@@ -3,7 +3,16 @@
 
 imf_key_data <- function(){
   # link
-  countries = "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2024/October/WEOOct2024all.ashx"
+  countries = imfweo::weo_list_releases() %>% 
+    dplyr::mutate(date = lubridate::ym(paste0(year,"-",month))) %>% 
+    dplyr::arrange(desc(date)) %>% 
+    dplyr::mutate(month_code = str_sub(string = month,start = 1,end = 3)) %>% 
+    dplyr::mutate(
+      full_link = paste0("https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/",
+                         year,"/",month,"/WEO",month_code,year,"all.ashx")
+    ) %>% 
+    dplyr::slice(1) %>% 
+    dplyr::pull(full_link)
   # raw data
   df_raw_countries <- read.delim(file = countries, skipNul = TRUE)
   base_columns <- c(names(df_raw_countries)[-tidyr::starts_with(match = "X", ignore.case = TRUE, vars = names(df_raw_countries))])
@@ -26,8 +35,7 @@ imf_key_data <- function(){
     dplyr::select(-country) %>% 
     filter(
       weo_subject_code %in% c(
-        "NGDP","GGXONLB","GGR","GGX","GGXWDG",
-        "GGXONLB_NGDP","GGR_NGDP","GGX_NGDP","GGXWDG_NGDP"
+        "NGDP","GGXONLB_NGDP","GGXWDG_NGDP"
       )
     )
   
