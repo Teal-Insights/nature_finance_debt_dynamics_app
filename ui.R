@@ -38,15 +38,14 @@ ui <- bslib::page_navbar(
   # nav section background colour
   bg = "#2c3e50",
   title = div(
-    style = "display: flex; align-items: center;",
+    class = "header-container",
     tags$img(
-      # src = "logo.png", 
-      height = "20px", 
-      style = "margin-right: 10px; border-radius: 50%"
+      src = "logo.svg", 
+      class = "header-logo"
     ),
     span(
-      "Public Debt Policy shock analysis",
-      style = "font-weight: bold; position: absolute; top: 50%; transform: translateY(-50%);"
+      class = "header-title",
+      "Public Debt Policy Shock Analysis"
     )
   ),
   header = div(  # This will stay at the top
@@ -56,65 +55,12 @@ ui <- bslib::page_navbar(
     # )
   ),
   tags$head(
+    # icon part
     tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
+    # navbar css file
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles/navbar.css"),
     # Integrated styles
-    tags$style(HTML("
-    .bslib-page-fill {
-        min-height: 100vh !important;
-        height: auto !important;
-      } 
-    .table-container {
-      background-color: #ffffff;
-      border-radius: 4px;
-    }
-    .row-bordered {
-      border-bottom: 1px solid #dee2e6;
-      padding: 8px 0;
-    }
-    .header-row {
-      border-bottom: 2px solid #b0b2b4;
-      border-top: 2px solid #b0b2b4;
-      background-color: #f8f9fa;
-      font-weight: bold;
-      padding: 8px 0;
-      margin-bottom: 8px;
-    }
-    .card {
-      margin-bottom: 1rem;
-    }
-    .form-control {
-      font-size: 0.9rem;
-    }
-    .math-section {
-      background-color: #f8f9fa;
-      padding: 20px;
-      border-radius: 5px;
-      margin: 10px 0;
-    }
-    .math-section h5 {
-      color: #2c3e50;
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-    .math-section ul {
-      margin-left: 20px;
-    }
-    .card {
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-    .card-header {
-      border-bottom: 1px solid rgba(0,0,0,.125);
-    }
-    .bg-primary {
-      background-color: #2c3e50 !important;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-  "))
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles/integrated.css")
   ),
   bslib::nav_spacer(),
   theme = bslib::bs_theme(
@@ -123,8 +69,8 @@ ui <- bslib::page_navbar(
   ) %>%
     bslib::bs_add_rules("
       hr {
-        margin-top: 5px !important;
-        margin-bottom: 5px !important;
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
     "),
   
@@ -467,7 +413,7 @@ ui <- bslib::page_navbar(
     style = "
       text-align: center; 
       padding: 10px; 
-      background-color: #f8f9fa; 
+      background-color: #2c3e50; 
       font-size: 14px; 
       font-style: bold;
     ",
@@ -477,15 +423,20 @@ ui <- bslib::page_navbar(
         target = "_blank",
         "Nature Finance"
       ),
-      " | "
+      span(
+        style = "color: #FFFF;",
+        " | "
+      )
       ,
       tags$a(
         href = "#",
         "Teal Insights"
       ),
-      paste0(
-        " | © ", lubridate::year(Sys.Date())
-      )
+        span(
+          style = "color: #FFFF;",
+          " | © ",
+          lubridate::year(Sys.Date())
+          )
     )
   )
 )
