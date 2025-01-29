@@ -64,5 +64,3 @@ create_shock_outputs <- function(shock_id, output, input, shock_values,
 }
 
 # ends: -------------------------------------------------------------------
-
-
