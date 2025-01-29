@@ -1,0 +1,55 @@
+/* Navbar styles */
+.header-container {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    margin-top: 2px;
+    margin-bottom: -25px;
+}
+
+.header-logo {
+    height: 100%;
+    width: auto;
+    max-width: 200px;
+    margin-right: 10px;
+}
+
+.header-title {
+    font-size: 1.2rem;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-container {
+        height: 40px;
+        margin-bottom: -15px;
+    }
+    
+    .header-logo {
+        max-width: 150px;
+        margin-right: 8px;
+    }
+    
+    .header-title {
+        font-size: 1rem;
+    }
+}
+
+/* Mobile screens */
+@media (max-width: 480px) {
+    .header-container {
+        height: 35px;
+        margin-bottom: -10px;
+    }
+    
+    .header-logo {
+        max-width: 120px;
+        margin-right: 6px;
+    }
+    
+    .header-title {
+        font-size: 0.9rem;
+    }
+}
