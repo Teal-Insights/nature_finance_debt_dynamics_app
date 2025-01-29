@@ -1,0 +1,89 @@
+.math-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+  margin: 10px 0;
+  overflow: visible;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+.math-section h5 {
+  color: #2c3e50;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.math-section h6 {
+  color: #34495e;
+  margin-top: 15px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.math-section p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+.math-section ul {
+  margin-left: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.math-section code {
+  background-color: #f1f3f5;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #e83e8c;
+  font-size: 0.875em;
+}
+
+.math-section a {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.math-section a:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background-color: #2c3e50 !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+}
+
+.card-body {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .math-section {
+    padding: 15px;
+  }
+  
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
