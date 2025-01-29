@@ -931,7 +931,7 @@
         "readxl",
         "tidyr"
       ],
-      "Hash": "3b474bfa19926dfd4a9d106dfd3b51f3"
+      "Hash": "48cfb69f8a8655193fb218eaa35d6db4"
     },
     "isoband": {
       "Package": "isoband",
@@ -1617,23 +1617,6 @@
         "xtable"
       ],
       "Hash": "4b4477baa9a939c5577e5ddb4bf01f28"
-    },
-    "shinyWidgets": {
-      "Package": "shinyWidgets",
-      "Version": "0.8.7",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "bslib",
-        "grDevices",
-        "htmltools",
-        "jsonlite",
-        "rlang",
-        "sass",
-        "shiny"
-      ],
-      "Hash": "fd8239886f70daa85c36596214958451"
     },
     "shinyjs": {
       "Package": "shinyjs",
