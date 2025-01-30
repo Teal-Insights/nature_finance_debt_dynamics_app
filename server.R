@@ -108,26 +108,7 @@ server <- function(input, output, session){
     output$data_projection <- renderDT({
       req(projection_processed_data())
       DT::datatable(
-        projection_processed_data(),
-        options = list(
-          autoWidth = TRUE,
-          scrollX = TRUE,
-          columnDefs = list(
-            # First column configuration
-            list(
-              targets = 1,
-              orderable = TRUE,  # Allow sorting
-              className = "text-column"
-            ),
-            # All other columns configuration
-            list(
-              targets = "_all", 
-              orderable = FALSE  # Disable sorting
-            )
-          ),
-          # Initial sorting configuration (optional)
-          order = list(list(1, 'asc'))
-        )
+        projection_processed_data()
       )
     })
     
@@ -158,37 +139,35 @@ server <- function(input, output, session){
   
   # Main observer code
   observe({
+    # Ensure required reactive values are available
     req(df_policy(), year_when_estimations_start())
+    
+    # Calculate years once
     projections_start_in <- year_when_estimations_start()
     start_year <- projections_start_in - 9
     
-    # Full plot
-    output$plot_full <- echarts4r::renderEcharts4r({
-      df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
-      server_create_debt_plot(df_long)
-    })
+    # Helper function to create plots
+    create_plots <- function(output_full_id, output_projection_id) {
+      # Full plot
+      output[[output_full_id]] <- echarts4r::renderEcharts4r({
+        df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
+        server_create_debt_plot(df_long)
+      })
+      
+      # Projection plot
+      output[[output_projection_id]] <- echarts4r::renderEcharts4r({
+        df_long <- df_policy() %>%
+          filter(year >= projections_start_in) %>%
+          server_prepare_shock_data(input$id_shock)
+        server_create_debt_plot(df_long)
+      })
+    }
     
-    # Projection plot
-    output$plot_projection <- echarts4r::renderEcharts4r({
-      df_long <- df_policy() %>%
-        filter(year >= projections_start_in) %>%
-        server_prepare_shock_data(input$id_shock)
-      server_create_debt_plot(df_long)
-    })
-    # home tab
-    # Full plot - home tab
-    output$plot_full_input <- echarts4r::renderEcharts4r({
-      df_long <- server_prepare_shock_data(df_policy(), input$id_shock, start_year)
-      server_create_debt_plot(df_long)
-    })
+    # Create main tab plots
+    create_plots("plot_full", "plot_projection")
     
-    # Projection plot - home tab
-    output$plot_projection_input <- echarts4r::renderEcharts4r({
-      df_long <- df_policy() %>%
-        filter(year >= projections_start_in) %>%
-        server_prepare_shock_data(input$id_shock)
-      server_create_debt_plot(df_long)
-    })
+    # Create home tab plots
+    create_plots("plot_full_input", "plot_projection_input")
   })
   # -------------------------------------------------------------------------
   # Data: -------------------------------------------------------------------
@@ -217,7 +196,7 @@ server <- function(input, output, session){
       need(all(required_columns %in% colnames(processed_data())), "No data available to display.")
     )
     
-    datatable(processed_data())
+    DT::datatable(processed_data())
     
   })
   # Reactive to check if the required columns exist

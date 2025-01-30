@@ -59,7 +59,7 @@ ui <- bslib::page_navbar(
   ),
   tags$head(
     # icon part
-    tags$link(rel = "icon", type = "image/x-icon", href = "logo.png"),
+    tags$link(rel = "icon", type = "image/x-icon", href = "icon.png"),
     # navbar css file
     tags$link(rel = "stylesheet", type = "text/css", href = "styles/navbar.css"),
     # Integrated styles
