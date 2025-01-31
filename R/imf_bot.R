@@ -14,7 +14,7 @@ source(file = "R/imf_key_data.R")
 source(file = "R/imf_format_years.R")
 
 # api call: ---------------------------------------------------------------
-df_main <- imf_key_data() %>% 
+df_main <- readr::read_rds(file = "data/IMFweo.rds") %>% 
   filter(iso3c == "KEN")
 
 
