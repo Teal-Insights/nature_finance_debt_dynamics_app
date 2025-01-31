@@ -14,11 +14,13 @@ source(file = "components/server_api_call.R")
 server <- function(input, output, session){
   df_countries <- imfweo::weo_list_countries() %>% 
     rename(iso3c = 'country_code',label = "country_name")
+  # getting IMF weo data
+  imf_key_data()
   
   # Call the header component
   server_create_country_headers(id = "id", output = output, input = input)
   
-  reactive_data <- setup_reactive_data(input, df_countries, imf_key_data)
+  reactive_data <- setup_reactive_data(input, df_countries, read_imf_weo)
   
   # get main data
   df_main <- reactive_data$df_main
