@@ -1,5 +1,8 @@
 
 # starts: -----------------------------------------------------------------
+read_imf_weo <- function(){
+  readr::read_rds(file = "data/IMFweo.rds")
+}
 # Helper functions for data processing
 process_main_data <- function(df_countries, input_country, imf_data) {
   country_iso3c <- df_countries %>% 
@@ -61,14 +64,14 @@ process_specific_data <- function(main_data, projection_year) {
 }
 
 # Function to setup reactive expressions
-setup_reactive_data <- function(input, df_countries, imf_key_data) {
+setup_reactive_data <- function(input, df_countries, read_imf_weo) {
   # Get main data
   df_main <- reactive({
     req(input$id_country)
     process_main_data(
       df_countries = df_countries,
       input_country = input$id_country,
-      imf_data = imf_key_data()
+      imf_data = read_imf_weo()
     )
   })
   
