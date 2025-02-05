@@ -30,33 +30,64 @@ analyze_policy_shock <- function(df_baseline, shock_values, year_when_estimation
   projections_start_in <- year_when_estimations_start - 1
   
   # Join and mutate
-  full_join(
+  df_full_join <- full_join(
     x = df_baseline %>% mutate(year = as.integer(year)),
     y = shock_values %>% mutate(year = as.integer(year)),
     by = "year"
-  ) %>%
+  ) 
+  
+  # initial debt before projection starts
+  initial_debt <- df_full_join %>% filter(year == projections_start_in) %>% pull(GGXWDG_NGDP)
+  
+  # Get projections
+  df_dp <- df_full_join %>% filter(year >= year_when_estimations_start)
+  
+  # projections
+  debt_policy_shock = server_project_debt(
+    initial_debt = initial_debt,
+    growth_rates = df_dp$gdp_shock,
+    interest_rates = df_dp$ir_shock,
+    primary_balances = df_dp$pb_shock
+  )
+  
+  debt_PB_shock = server_project_debt(
+    initial_debt = initial_debt,
+    growth_rates = df_dp$gdp_growth,
+    interest_rates = df_dp$real_effective_rate,
+    primary_balances = df_dp$pb_shock
+  )
+  
+  debt_Interest_shock = server_project_debt(
+    initial_debt = initial_debt,
+    growth_rates = df_dp$gdp_growth,
+    interest_rates = df_dp$ir_shock,
+    primary_balances = df_dp$GGXONLB_NGDP
+  )
+  
+  debt_GDP_shock = server_project_debt(
+    initial_debt = initial_debt,
+    growth_rates = df_dp$gdp_shock,
+    interest_rates = df_dp$real_effective_rate,
+    primary_balances = df_dp$GGXONLB_NGDP
+  )
+  # result
+  result <- data.frame(
+    year = shock_values$year,
+    debt_PB_shock = debt_PB_shock,
+    debt_Interest_shock = debt_Interest_shock,
+    debt_GDP_shock = debt_GDP_shock,
+    debt_policy_shock = debt_policy_shock
+  )
+  
+  df_full_join %>%
+    left_join(y = result,by = "year") %>% 
     mutate(
-      debt_PB_shock = (((1 + real_effective_rate / 100) / (1 + gdp_growth / 100)) * lag(GGXWDG_NGDP) - pb_shock),
-      debt_Interest_shock = (((1 + ir_shock / 100) / (1 + gdp_growth / 100)) * lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-      debt_GDP_shock = (((1 + real_effective_rate / 100) / (1 + gdp_shock / 100)) * lag(GGXWDG_NGDP) - GGXONLB_NGDP),
-      debt_policy_shock = (((1 + ir_shock / 100) / (1 + gdp_shock / 100)) * lag(GGXWDG_NGDP) - pb_shock)
-    ) %>% 
-    mutate(
-      debt_PB_shock = case_when(
-        year == projections_start_in ~ GGXWDG_NGDP, 
-        .default = debt_PB_shock
-      ),
-      debt_Interest_shock = case_when(
-        year == projections_start_in ~ GGXWDG_NGDP, 
-        .default = debt_Interest_shock
-      ),
-      debt_GDP_shock = case_when(
-        year == projections_start_in ~ GGXWDG_NGDP, 
-        .default = debt_GDP_shock
-      ),
-      debt_policy_shock = case_when(
-        year == projections_start_in ~ GGXWDG_NGDP, 
-        .default = debt_policy_shock
+      across(
+        .cols = starts_with("debt_") & ends_with("_shock"),
+        .fns = ~case_when(
+          year == projections_start_in ~ GGXWDG_NGDP,
+          .default = .x
+        )
       )
     ) %>% 
     mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2))) %>% 

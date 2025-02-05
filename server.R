@@ -9,6 +9,7 @@ source(file = "components/server_shock_outputs.R")
 source(file = "components/server_input_reactive_data_functions.R")
 source(file = "components/server_shock_analysis.R")
 source(file = "components/server_api_call.R")
+source(file = "components/server_debt_projections.R")
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session){
