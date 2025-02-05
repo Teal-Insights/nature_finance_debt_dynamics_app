@@ -37,7 +37,9 @@ analyze_policy_shock <- function(df_baseline, shock_values, year_when_estimation
   ) 
   
   # initial debt before projection starts
-  initial_debt <- df_full_join %>% filter(year == projections_start_in) %>% pull(GGXWDG_NGDP)
+  initial_debt <- df_full_join %>% 
+    filter(year == projections_start_in) %>% 
+    pull(GGXWDG_NGDP)
   
   # Get projections
   df_dp <- df_full_join %>% filter(year >= year_when_estimations_start)
@@ -90,7 +92,7 @@ analyze_policy_shock <- function(df_baseline, shock_values, year_when_estimation
         )
       )
     ) %>% 
-    mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2))) %>% 
+    # mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2))) %>%
     rename(
       Baseline = "GGXWDG_NGDP",
       "GDP growth" = "gdp_growth",

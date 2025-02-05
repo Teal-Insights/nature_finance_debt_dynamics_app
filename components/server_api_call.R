@@ -28,9 +28,9 @@ process_specific_data <- function(main_data, projection_year) {
     select(weo_subject_code, year, outcome) %>% 
     spread(key = weo_subject_code, value = outcome) %>% 
     mutate(
-      gdp_growth = (NGDP - lag(NGDP)) / lag(NGDP) * 100,
-      real_effective_rate = ((1 + gdp_growth/100) * 
-                               ((GGXWDG_NGDP + GGXONLB_NGDP)/(lag(GGXWDG_NGDP))) - 1) * 100
+      gdp_growth = (replace_na(NGDP, 0) - lag(replace_na(NGDP, 0))) / lag(replace_na(NGDP, 0)) * 100,
+      real_effective_rate = ((1 + replace_na(gdp_growth, 0)/100) * 
+                               ((replace_na(GGXWDG_NGDP, 0) + replace_na(GGXONLB_NGDP, 0))/(lag(replace_na(GGXWDG_NGDP, 0)))) - 1) * 100
     ) %>% 
     gather(key = weo_subject_code, value = outcome, -c("year"))
   
@@ -59,8 +59,9 @@ process_specific_data <- function(main_data, projection_year) {
     ) %>% 
     fill(weo_country_code, .direction = "down") %>% 
     fill(iso3c, .direction = "down") %>% 
-    fill(country_name, .direction = "down") %>% 
-    mutate(outcome = round(x = outcome, digits = 2))
+    fill(country_name, .direction = "down") 
+  # %>% 
+  #   mutate(outcome = round(x = outcome, digits = 2))
 }
 
 # Function to setup reactive expressions

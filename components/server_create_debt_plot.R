@@ -14,8 +14,8 @@ server_create_debt_plot <- function(df_long) {
     ) %>%
     e_y_axis(
       name = "Debt (% of GDP)",
-      scale = TRUE,          # This ensures axis starts from min value
-      min = y_min           # Set minimum value
+      scale = TRUE,          
+      min = y_min           
     ) %>%
     e_legend(
       top = "0",
@@ -24,6 +24,17 @@ server_create_debt_plot <- function(df_long) {
     ) %>%
     e_tooltip(
       trigger = "axis",
+      formatter = htmlwidgets::JS("
+        function(params) {
+          var year = params[0].axisValue;
+          var result = year;
+          params.forEach(function(param) {
+            var value = Number(param.value[1]).toFixed(3);
+            result += '<br/>' + param.marker + param.seriesName + ': ' + value;
+          });
+          return result;
+        }
+      "),
       axisPointer = list(
         type = "cross"
       )

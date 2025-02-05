@@ -1,7 +1,6 @@
-
-# starts: -----------------------------------------------------------------
 create_shock_outputs <- function(shock_id, output, input, shock_values, 
-                                 available_years, coefficients) {
+                                 available_years, coefficients, decimal_places = 9) {
+  
   # Create dynamic rows for each shock
   output[[sprintf("%s_rows", shock_id)]] <- renderUI({
     years <- available_years()
@@ -41,10 +40,10 @@ create_shock_outputs <- function(shock_id, output, input, shock_values,
         avg_id <- sprintf("%s_%d_avg", shock_id, year)
         score_id <- sprintf("%s_%d_score", shock_id, year)
         
-        # Render coefficient
+        # Render coefficient - display with 2 decimals
         output[[coef_id]] <- renderText({
           req(coefficients()[[shock_id]][[sprintf("y%d", year)]])
-          coefficients()[[shock_id]][[sprintf("y%d", year)]]
+          format(round(coefficients()[[shock_id]][[sprintf("y%d", year)]], 2), nsmall = 2)
         })
         
         # Render score and update shock values
@@ -52,15 +51,14 @@ create_shock_outputs <- function(shock_id, output, input, shock_values,
           req(input[[avg_id]], 
               coefficients()[[shock_id]][[sprintf("y%d", year)]])
           
-          final_value <- round(
-            coefficients()[[shock_id]][[sprintf("y%d", year)]] + 
-              input[[avg_id]], 2)
-          shock_values[[shock_id]][year_index] <- final_value
-          final_value
+          # Calculate with high precision
+          exact_value <- coefficients()[[shock_id]][[sprintf("y%d", year)]] + input[[avg_id]]
+          # Store with high precision
+          shock_values[[shock_id]][year_index] <- round(exact_value, decimal_places)
+          # Display with exactly 2 decimals
+          format(round(exact_value, 2), nsmall = 2)
         })
       })
     }
   })
 }
-
-# ends: -------------------------------------------------------------------
