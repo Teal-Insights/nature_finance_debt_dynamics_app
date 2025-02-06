@@ -181,9 +181,11 @@ server <- function(input, output, session){
     # return data
     if (input$data_format == "Long") {
       df_specific() %>% 
+        mutate(across(where(is.numeric) & !all_of(c("year","weo_country_code")), ~ round(., digits = 2))) %>% 
         select(-estimates_start_after)
     }else {
       df_specific() %>% 
+        mutate(across(where(is.numeric) & !all_of(c("year","weo_country_code")), ~ round(., digits = 2))) %>% 
         spread(key = year, value = outcome) %>% 
         arrange(units) %>% 
         select(-estimates_start_after)
