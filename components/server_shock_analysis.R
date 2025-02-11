@@ -6,12 +6,12 @@ create_baseline_data <- function(df_main, df_specific, year_when_estimations_sta
   
   df_specific %>% 
     select(weo_subject_code, year, outcome) %>% 
-    filter(weo_subject_code %in% c("GGXWDG_NGDP", "gdp_growth", "GGXONLB_NGDP", "real_effective_rate")) %>% 
+    filter(weo_subject_code %in% c("GGXWDG_NGDP", "NGDP_RPCH", "GGXONLB_NGDP", "real_effective_rate")) %>% 
     spread(key = weo_subject_code, value = outcome) %>% 
     mutate(
-      gdp_growth = case_when(
+      NGDP_RPCH = case_when(
         year < projections_start_in ~ NA_real_, 
-        .default = gdp_growth
+        .default = NGDP_RPCH
       ),
       GGXONLB_NGDP = case_when(
         year < projections_start_in ~ NA_real_, 
@@ -54,14 +54,14 @@ analyze_policy_shock <- function(df_baseline, shock_values, year_when_estimation
   
   debt_PB_shock = server_project_debt(
     initial_debt = initial_debt,
-    growth_rates = df_dp$gdp_growth,
+    growth_rates = df_dp$NGDP_RPCH,
     interest_rates = df_dp$real_effective_rate,
     primary_balances = df_dp$pb_shock
   )
   
   debt_Interest_shock = server_project_debt(
     initial_debt = initial_debt,
-    growth_rates = df_dp$gdp_growth,
+    growth_rates = df_dp$NGDP_RPCH,
     interest_rates = df_dp$ir_shock,
     primary_balances = df_dp$GGXONLB_NGDP
   )
@@ -95,7 +95,7 @@ analyze_policy_shock <- function(df_baseline, shock_values, year_when_estimation
     # mutate(across(where(is.numeric) & !all_of("year"), ~ round(., digits = 2))) %>%
     rename(
       Baseline = "GGXWDG_NGDP",
-      "GDP growth" = "gdp_growth",
+      "GDP growth" = "NGDP_RPCH",
       "GDP growth shock" = "gdp_shock",
       "Primary balance (% of GDP)" = "GGXONLB_NGDP",
       "Primary balance (% of GDP) shock" = "pb_shock",

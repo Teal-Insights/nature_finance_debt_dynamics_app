@@ -46,10 +46,7 @@ df_compute <- df_specific %>%
   select(weo_subject_code, year, outcome) %>% 
   spread(key = weo_subject_code, value = outcome) %>% 
   mutate(
-    gdp_growth = (NGDP - lag(NGDP)) / lag(NGDP) * 100
-  ) %>% 
-  mutate(
-    real_effective_rate = ((1 + gdp_growth/100)*((GGXWDG_NGDP + GGXONLB_NGDP)/(lag(GGXWDG_NGDP))) - 1)*100
+    real_effective_rate = ((1 + NGDP_RPCH/100)*((GGXWDG_NGDP + GGXONLB_NGDP)/(lag(GGXWDG_NGDP))) - 1)*100
   ) %>% 
   gather(key = weo_subject_code, value = outcome, -c("year"))
 
@@ -60,17 +57,14 @@ df_final <- full_join(
 ) %>% 
   mutate(
     units = case_when(
-      weo_subject_code == "gdp_growth" ~ "Percent change",
       weo_subject_code == "real_effective_rate" ~ "Percent",
       .default = units
       ),
     scale = case_when(
-      weo_subject_code == "gdp_growth" ~ "Units",
       weo_subject_code == "real_effective_rate" ~ "Units",
       .default = scale
     ),
     subject_descriptor = case_when(
-      weo_subject_code == "gdp_growth" ~ "GDP growth",
       weo_subject_code == "real_effective_rate" ~ "Real effective interest rate",
       .default = subject_descriptor
     )
@@ -83,11 +77,11 @@ df_final <- full_join(
 # shock analysis ----------------------------------------------------------
 df_baseline <- df_final %>% 
   select(weo_subject_code, year, outcome) %>% 
-  filter(weo_subject_code %in% c("GGXWDG_NGDP","gdp_growth", "GGXONLB_NGDP", "real_effective_rate")) %>% 
+  filter(weo_subject_code %in% c("GGXWDG_NGDP","NGDP_RPCH", "GGXONLB_NGDP", "real_effective_rate")) %>% 
   spread(key = weo_subject_code, value = outcome) %>% 
   mutate(
-    gdp_growth = case_when(
-      year <= projections_start_after ~ NA, .default = gdp_growth
+    NGDP_RPCH = case_when(
+      year <= projections_start_after ~ NA, .default = NGDP_RPCH
       ),
     GGXONLB_NGDP = case_when(
       year <= projections_start_after ~ NA, .default = GGXONLB_NGDP
@@ -107,9 +101,9 @@ df_shock_pb <- df_baseline %>%
   ) %>% 
   # modelling debt using debt dynamic equation and new shocks
   mutate(
-    debt_shock_pb_by_200_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
-    debt_shock_pb_by_300_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
-    debt_shock_pb_by_400_bp = (((1+real_effective_rate/100)/(1+gdp_growth/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp)
+    debt_shock_pb_by_200_bp = (((1+real_effective_rate/100)/(1+NGDP_RPCH/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
+    debt_shock_pb_by_300_bp = (((1+real_effective_rate/100)/(1+NGDP_RPCH/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp),
+    debt_shock_pb_by_400_bp = (((1+real_effective_rate/100)/(1+NGDP_RPCH/100))*lag(GGXWDG_NGDP) - shock_pb_by_200_bp)
   ) %>% 
   mutate(
     debt_shock_pb_by_200_bp = case_when(

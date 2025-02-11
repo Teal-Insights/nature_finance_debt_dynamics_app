@@ -28,8 +28,7 @@ process_specific_data <- function(main_data, projection_year) {
     select(weo_subject_code, year, outcome) %>% 
     spread(key = weo_subject_code, value = outcome) %>% 
     mutate(
-      gdp_growth = (replace_na(NGDP, 0) - lag(replace_na(NGDP, 0))) / lag(replace_na(NGDP, 0)) * 100,
-      real_effective_rate = ((1 + replace_na(gdp_growth, 0)/100) * 
+      real_effective_rate = ((1 + replace_na(NGDP_RPCH, 0)/100) * 
                                ((replace_na(GGXWDG_NGDP, 0) + replace_na(GGXONLB_NGDP, 0))/(lag(replace_na(GGXWDG_NGDP, 0)))) - 1) * 100
     ) %>% 
     gather(key = weo_subject_code, value = outcome, -c("year"))
@@ -42,17 +41,14 @@ process_specific_data <- function(main_data, projection_year) {
   ) %>% 
     mutate(
       units = case_when(
-        weo_subject_code == "gdp_growth" ~ "Percent change",
         weo_subject_code == "real_effective_rate" ~ "Percent",
         .default = units
       ),
       scale = case_when(
-        weo_subject_code == "gdp_growth" ~ "Units",
         weo_subject_code == "real_effective_rate" ~ "Units",
         .default = scale
       ),
       subject_descriptor = case_when(
-        weo_subject_code == "gdp_growth" ~ "GDP growth",
         weo_subject_code == "real_effective_rate" ~ "Real effective interest rate",
         .default = subject_descriptor
       )

@@ -44,16 +44,13 @@ methodology_content <- "
   <h6>1. Main Debt Dynamics Equation:</h6>
   \\[ \\tag{1} d_t = \\frac{1 + r_t}{1 + g_t}d_{t-1} - pb_t \\]
   
-  <h6>2. GDP Growth Rate Calculation:</h6>
-  \\[ \\tag{2} g_t = \\frac{GDP_t - GDP_{t-1}}{GDP_{t-1}} \\times 100 \\]
+  <h6>2. Real Effective Interest Rate Derivation:</h6>
+  \\[ \\tag{2} r_t = \\frac{(d_t + pb_t)(1 + g_t)}{d_{t-1}} - 1 \\]
   
-  <h6>3. Real Effective Interest Rate Derivation:</h6>
-  \\[ \\tag{3} r_t = \\frac{(d_t + pb_t)(1 + g_t)}{d_{t-1}} - 1 \\]
-  
-  <h6>4. Final Shock Calculations:</h6>
-  \\[ \\tag{4a} r_t^{final} = r_t^{baseline} + r_t^{shock} \\]
-  \\[ \\tag{4b} g_t^{final} = g_t^{baseline} + g_t^{shock} \\]
-  \\[ \\tag{4c} pb_t^{final} = pb_t^{baseline} + pb_t^{shock} \\]
+  <h6>3. Final Shock Calculations:</h6>
+  \\[ \\tag{3a} r_t^{final} = r_t^{baseline} + r_t^{shock} \\]
+  \\[ \\tag{3b} g_t^{final} = g_t^{baseline} + g_t^{shock} \\]
+  \\[ \\tag{3c} pb_t^{final} = pb_t^{baseline} + pb_t^{shock} \\]
   
   <h5>Where:</h5>
   <ul>
@@ -67,14 +64,11 @@ methodology_content <- "
     <li>\\( r_t^{shock}, g_t^{shock}, pb_t^{shock} \\) = policy shock values</li>
   </ul>
   
-  <h5>Computation of GDP Growth Rate:</h5>
-  <p>The analytical process begins with calculating the GDP growth rate using current price GDP data through equation (2). This calculation is crucial as it captures the economy's expansion or contraction over time, which directly impacts debt sustainability. The growth rate calculation uses GDP values from consecutive periods to measure the percentage change in economic output. This rate serves as a fundamental indicator of the economy's capacity to generate resources and manage its debt burden, making it a critical component in assessing long-term debt sustainability and fiscal policy effectiveness.</p>
-  
   <h5>Computation of Real Effective Interest Rate:</h5>
-  <p>The real effective interest rate (\\(r_t\\)) computation, represented in equation (3), employs a backward calculation approach utilizing the debt dynamics equation. This derivation is made possible by having access to actual debt levels, calculated GDP growth rates, and primary balances from historical data. The methodology involves rearranging the original debt dynamics equation to isolate the interest rate term, thereby revealing the implicit rate that would have generated the observed changes in debt ratios. This approach captures the effective cost of borrowing faced by the government across its entire debt portfolio, incorporating various maturities, currencies, and interest rate structures.</p>
+  <p>The real effective interest rate (\\(r_t\\)) computation, represented in equation (2), employs a backward calculation approach utilizing the debt dynamics equation. This derivation is made possible by having access to actual debt levels, calculated GDP growth rates, and primary balances from historical data. The methodology involves rearranging the original debt dynamics equation to isolate the interest rate term, thereby revealing the implicit rate that would have generated the observed changes in debt ratios. This approach captures the effective cost of borrowing faced by the government across its entire debt portfolio, incorporating various maturities, currencies, and interest rate structures.</p>
   
   <h5>Debt Projection:</h5>
-  <p>The final projection methodology incorporates policy shocks through equations (4a), (4b), and (4c), where baseline values for real effective interest rates, GDP growth, and primary balance are adjusted by user-specified shock values. These shock calculations are performed in percentage terms, with the final shocked values representing the sum of baseline and policy shock values for each respective variable. The resulting final values (\\(r_t^{final}, g_t^{final}, pb_t^{final}\\)) are then input into the main debt dynamics equation (1) to generate the debt projection under the specified shock scenario. This approach allows for a comprehensive analysis of how policy changes or external shocks might affect debt sustainability, providing policymakers with valuable insights for debt management and fiscal policy decisions.</p>"
+  <p>The final projection methodology incorporates policy shocks through equations (3a), (3b), and (3c), where baseline values for real effective interest rates, GDP growth, and primary balance are adjusted by user-specified shock values. These shock calculations are performed in percentage terms, with the final shocked values representing the sum of baseline and policy shock values for each respective variable. The resulting final values (\\(r_t^{final}, g_t^{final}, pb_t^{final}\\)) are then input into the main debt dynamics equation (1) to generate the debt projection under the specified shock scenario. This approach allows for a comprehensive analysis of how policy changes or external shocks might affect debt sustainability, providing policymakers with valuable insights for debt management and fiscal policy decisions.</p>"
 
 # Main component function
 ui_documentation_component <- function() {

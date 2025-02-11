@@ -75,7 +75,7 @@ get_gdp_data <- function(df_baseline, year_when_estimations_start) {
     projections_start_in <- year_when_estimations_start()
     
     df_baseline() %>%
-      select(year, value = gdp_growth) %>%
+      select(year, value = NGDP_RPCH) %>%
       filter(year >= projections_start_in)
   })
 }
