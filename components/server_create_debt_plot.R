@@ -1,9 +1,8 @@
-
 # starts ------------------------------------------------------------------
 server_create_debt_plot <- function(df_long) {
   # Get min value for y-axis (rounded down to nearest whole number)
   y_min <- floor(min(df_long$outcome))
-  
+
   df_long %>%
     group_by(indicator) %>%
     e_charts(year) %>%
@@ -14,8 +13,8 @@ server_create_debt_plot <- function(df_long) {
     ) %>%
     e_y_axis(
       name = "Debt (% of GDP)",
-      scale = TRUE,          
-      min = y_min           
+      scale = TRUE,
+      min = y_min
     ) %>%
     e_legend(
       top = "0",
@@ -46,5 +45,3 @@ server_create_debt_plot <- function(df_long) {
 }
 
 # ends --------------------------------------------------------------------
-
-

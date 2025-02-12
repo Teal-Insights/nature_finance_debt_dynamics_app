@@ -13,7 +13,6 @@ suppressPackageStartupMessages({
 source(file = "R/imf_key_data.R")
 source(file = "R/imf_countries.R")
 source(file = "R/imf_indicators.R")
-source(file = "R/imf_series.R")
 source(file = "R/imf_format_years.R")
 source(file = "R/ui_create_shock_table.R")
 

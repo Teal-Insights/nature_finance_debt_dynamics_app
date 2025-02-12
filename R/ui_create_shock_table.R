@@ -1,14 +1,13 @@
-
 # starts: -----------------------------------------------------------------
 # Function to create shock table UI
 ui_create_shock_table <- function(id) {
   div(
     class = "table-container p-2",
     style = "font-size: 0.9rem;",
-    
+
     # Error/warning display
     uiOutput(sprintf("%s_error", id)),
-    
+
     # Header row
     div(
       class = "header-row",
@@ -19,7 +18,7 @@ ui_create_shock_table <- function(id) {
         column(3, "Final shock (%)")
       )
     ),
-    
+
     # Dynamic year rows
     uiOutput(sprintf("%s_rows", id))
   )

@@ -1,4 +1,3 @@
-
 # starts: -----------------------------------------------------------------
 #' Create a reactive expression for available years
 #' @param df_baseline Reactive expression containing baseline data
@@ -8,11 +7,11 @@ get_available_years <- function(df_baseline, year_when_estimations_start) {
   reactive({
     req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
-    
+
     df_baseline() %>%
       filter(year >= projections_start_in) %>%
       pull(year) %>%
-      unique() %>% 
+      unique() %>%
       sort()
   })
 }
@@ -25,7 +24,7 @@ get_reactive_shock_values <- function(available_years, shock_values) {
   reactive({
     years <- available_years()
     req(years)
-    
+
     data.frame(
       year      = years,
       pb_shock  = shock_values$pb,
@@ -41,9 +40,9 @@ get_reactive_shock_values <- function(available_years, shock_values) {
 #' @return Reactive expression returning filtered primary balance data
 get_pb_data <- function(df_baseline, year_when_estimations_start) {
   reactive({
-    req(df_baseline(), year_when_estimations_start()) 
+    req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
-    
+
     df_baseline() %>%
       select(year, value = GGXONLB_NGDP) %>%
       filter(year >= projections_start_in)
@@ -56,9 +55,9 @@ get_pb_data <- function(df_baseline, year_when_estimations_start) {
 #' @return Reactive expression returning filtered interest rate data
 get_ir_data <- function(df_baseline, year_when_estimations_start) {
   reactive({
-    req(df_baseline(), year_when_estimations_start()) 
+    req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
-    
+
     df_baseline() %>%
       select(year, value = real_effective_rate) %>%
       filter(year >= projections_start_in)
@@ -71,9 +70,9 @@ get_ir_data <- function(df_baseline, year_when_estimations_start) {
 #' @return Reactive expression returning filtered GDP data
 get_gdp_data <- function(df_baseline, year_when_estimations_start) {
   reactive({
-    req(df_baseline(), year_when_estimations_start()) 
+    req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
-    
+
     df_baseline() %>%
       select(year, value = NGDP_RPCH) %>%
       filter(year >= projections_start_in)
@@ -85,15 +84,19 @@ get_gdp_data <- function(df_baseline, year_when_estimations_start) {
 #' @param shock_name Name of the shock for error messages
 #' @return Named list of values
 df_to_list <- function(df, shock_name) {
-  tryCatch({
-    if (nrow(df) == 0) {
-      return(setNames(numeric(0), character(0)))
+  tryCatch(
+    {
+      if (nrow(df) == 0) {
+        return(setNames(numeric(0), character(0)))
+      }
+      values <- setNames(df$value, paste0("y", df$year))
+      return(as.list(values))
+    },
+    error = function(e) {
+      stop(sprintf("Error converting %s data to list: %s",
+                   shock_name, e$message))
     }
-    values <- setNames(df$value, paste0("y", df$year))
-    return(as.list(values))
-  }, error = function(e) {
-    stop(sprintf("Error converting %s data to list: %s", shock_name, e$message))
-  })
+  )
 }
 
 #' Create a reactive expression for coefficients
@@ -112,5 +115,3 @@ get_coefficients <- function(pb_data, ir_data, gdp_data) {
 }
 
 # ends: -------------------------------------------------------------------
-
-
