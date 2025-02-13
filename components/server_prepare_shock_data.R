@@ -10,7 +10,7 @@ server_prepare_shock_data <- function(
     ),
     "Primary balance" = c(
       "Baseline",
-      "Debt Projection : Primary balance Shock" = "debt_PB_shock"
+      "Debt Projection : Primary Balance Shock" = "debt_PB_shock"
     ),
     "GDP growth" = c(
       "Baseline",

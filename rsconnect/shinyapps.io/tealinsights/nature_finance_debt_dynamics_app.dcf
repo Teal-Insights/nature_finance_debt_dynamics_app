@@ -1,0 +1,12 @@
+name: nature_finance_debt_dynamics_app
+title: nature_finance_debt_dynamics_app
+username: tealinsights
+account: tealinsights
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13994836
+bundleId: 9796402
+url: https://tealinsights.shinyapps.io/nature_finance_debt_dynamics_app/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

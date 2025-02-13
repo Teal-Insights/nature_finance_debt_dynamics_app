@@ -14,7 +14,7 @@ ui_create_shock_table <- function(id) {
       fluidRow(
         column(2, "Year"),
         column(3, "IMF WEO Baseline (%)"),
-        column(3, "Policy shock (%)"),
+        column(3, "Policy Shock (%)"),
         column(4, "Policy-Adjusted Forecast (%)")
       )
     ),

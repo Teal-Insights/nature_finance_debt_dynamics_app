@@ -136,7 +136,7 @@ ui <- bslib::page_navbar(
                 "All these indicators are in ",tags$b("%.")
               ),
               tags$li(
-                "Navigate to the policy shock column under each indicator",
+                "Navigate to the Policy Shock column under each indicator",
                 tags$br(),
                 tags$span(
                   "Look for ", 
@@ -145,7 +145,11 @@ ui <- bslib::page_navbar(
                 )
               ),
               tags$li(
-                "Final shock is the sum of ",tags$b("baseline")," values plus ",tags$b("policy")," shock values"
+                "The ", tags$b("Policy-Adjusted Forecast")," is the sum of the",
+                tags$b("IMF WEO Baseline"),
+                " values plus the user-provided ",tags$b("Policy Shock"),
+                " values.", " The ", tags$b("Policy-Adjusted Forecast"), 
+                "values are plugged into the debt dynamics equation to calculate the new debt path."
               )
             )
           ),
