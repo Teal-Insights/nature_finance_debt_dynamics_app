@@ -48,10 +48,10 @@ ui <- bslib::page_navbar(
     ),
     span(
       class = "header-title",
-      "Public Debt Policy Shock Analysis"
+      "Debt Path Explorer"
     )
   ),
-  header = div(  # This will stay at the top
+  header = div(
     # div(
     #   style = "text-align: center; font-weight: bold; font-size: 20px; color: red; margin-bottom: 0px;",
     #   "This app is under development"
