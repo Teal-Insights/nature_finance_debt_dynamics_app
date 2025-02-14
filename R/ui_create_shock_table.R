@@ -18,7 +18,6 @@ ui_create_shock_table <- function(id) {
         column(4, "Policy-Adjusted Forecast (%)")
       )
     ),
-
     # Dynamic year rows
     uiOutput(sprintf("%s_rows", id))
   )

@@ -40,7 +40,7 @@ server_project_debt <- function(initial_debt, growth_rates, interest_rates,
       pb = primary_balances[i]
     )
   }
-
+  # returns a vector of projected debts
   return(projected_debt)
 }
 # ends: -------------------------------------------------------------------

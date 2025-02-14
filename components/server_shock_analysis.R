@@ -5,22 +5,22 @@ create_baseline_data <- function(df_main, df_specific,
   projections_start_in <- year_when_estimations_start
 
   df_specific %>%
-    select(weo_subject_code, year, outcome) %>%
-    filter(weo_subject_code %in% c(
+    dplyr::select(weo_subject_code, year, outcome) %>%
+    dplyr::filter(weo_subject_code %in% c(
       "GGXWDG_NGDP", "NGDP_RPCH", "GGXONLB_NGDP",
       "real_effective_rate"
     )) %>%
-    spread(key = weo_subject_code, value = outcome) %>%
-    mutate(
-      NGDP_RPCH = case_when(
+    tidyr::spread(key = weo_subject_code, value = outcome) %>%
+    dplyr::mutate(
+      NGDP_RPCH = dplyr::case_when(
         year < projections_start_in ~ NA_real_,
         .default = NGDP_RPCH
       ),
-      GGXONLB_NGDP = case_when(
+      GGXONLB_NGDP = dplyr::case_when(
         year < projections_start_in ~ NA_real_,
         .default = GGXONLB_NGDP
       ),
-      real_effective_rate = case_when(
+      real_effective_rate = dplyr::case_when(
         year < projections_start_in ~ NA_real_,
         .default = real_effective_rate
       )
@@ -34,19 +34,19 @@ analyze_policy_shock <- function(df_baseline, shock_values,
   projections_start_in <- year_when_estimations_start - 1
 
   # Join and mutate
-  df_full_join <- full_join(
-    x = df_baseline %>% mutate(year = as.integer(year)),
-    y = shock_values %>% mutate(year = as.integer(year)),
+  df_full_join <- dplyr::full_join(
+    x = df_baseline %>% dplyr::mutate(year = as.integer(year)),
+    y = shock_values %>% dplyr::mutate(year = as.integer(year)),
     by = "year"
   )
 
   # initial debt before projection starts
   initial_debt <- df_full_join %>%
-    filter(year == projections_start_in) %>%
-    pull(GGXWDG_NGDP)
+    dplyr::filter(year == projections_start_in) %>%
+    dplyr::pull(GGXWDG_NGDP)
 
   # Get projections
-  df_dp <- df_full_join %>% filter(year >= year_when_estimations_start)
+  df_dp <- df_full_join %>% dplyr::filter(year >= year_when_estimations_start)
 
   # projections
   debt_policy_shock <- server_project_debt(
@@ -56,21 +56,21 @@ analyze_policy_shock <- function(df_baseline, shock_values,
     primary_balances = df_dp$pb_shock
   )
 
-  debt_PB_shock <- server_project_debt(
+  debt_pb_shock <- server_project_debt(
     initial_debt = initial_debt,
     growth_rates = df_dp$NGDP_RPCH,
     interest_rates = df_dp$real_effective_rate,
     primary_balances = df_dp$pb_shock
   )
 
-  debt_Interest_shock <- server_project_debt(
+  debt_interest_shock <- server_project_debt(
     initial_debt = initial_debt,
     growth_rates = df_dp$NGDP_RPCH,
     interest_rates = df_dp$ir_shock,
     primary_balances = df_dp$GGXONLB_NGDP
   )
 
-  debt_GDP_shock <- server_project_debt(
+  debt_gdp_shock <- server_project_debt(
     initial_debt = initial_debt,
     growth_rates = df_dp$gdp_shock,
     interest_rates = df_dp$real_effective_rate,
@@ -79,24 +79,24 @@ analyze_policy_shock <- function(df_baseline, shock_values,
   # result
   result <- data.frame(
     year = shock_values$year,
-    debt_PB_shock = debt_PB_shock,
-    debt_Interest_shock = debt_Interest_shock,
-    debt_GDP_shock = debt_GDP_shock,
+    debt_pb_shock = debt_pb_shock,
+    debt_interest_shock = debt_interest_shock,
+    debt_gdp_shock = debt_gdp_shock,
     debt_policy_shock = debt_policy_shock
   )
 
   df_full_join %>%
-    left_join(y = result, by = "year") %>%
-    mutate(
-      across(
-        .cols = starts_with("debt_") & ends_with("_shock"),
-        .fns = ~ case_when(
+    dplyr::left_join(y = result, by = "year") %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = dplyr::starts_with("debt_") & ends_with("_shock"),
+        .fns = ~ dplyr::case_when(
           year == projections_start_in ~ GGXWDG_NGDP,
           .default = .x
         )
       )
     ) %>%
-    rename(
+    dplyr::rename(
       Baseline = "GGXWDG_NGDP",
       "GDP growth" = "NGDP_RPCH",
       "GDP growth shock" = "gdp_shock",

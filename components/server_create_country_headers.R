@@ -9,5 +9,4 @@ server_create_country_headers <- function(id, output, input) {
     })
   })
 }
-
 # ends --------------------------------------------------------------------

@@ -3,6 +3,7 @@ server_prepare_shock_data <- function(
     df_policy,
     shock_type,
     start_year = NULL) {
+  # a list of shock items
   shock_columns <- list(
     "Policy shock" = c(
       "Baseline",
@@ -22,16 +23,16 @@ server_prepare_shock_data <- function(
         "debt_Interest_shock"
     )
   )
-
+  # select key variables
   df <- df_policy %>%
-    select(year, !!!shock_columns[[shock_type]])
-
+    dplyr::select(year, !!!shock_columns[[shock_type]])
+  # filter key observations
   if (!is.null(start_year)) {
-    df <- df %>% filter(year >= start_year)
+    df <- df %>% dplyr::filter(year >= start_year)
   }
-
+  # gather data into long format
   df %>%
-    gather(key = indicator, value = outcome, -c("year"))
+    tidyr::gather(key = indicator, value = outcome, -c("year"))
 }
 
 # ends: -------------------------------------------------------------------

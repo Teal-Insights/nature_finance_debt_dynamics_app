@@ -30,7 +30,6 @@ imf_indicators <- function() {
   if (is.null(list_indicators) || length(list_indicators) == 0) {
     stop("No indicators found in the response.")
   }
-
   # Convert the list of indicators to a tibble
   merged_indicators <- purrr::map_df(
     names(list_indicators),
@@ -41,7 +40,6 @@ imf_indicators <- function() {
       }
     }
   )
-
   # Return the resulting tibble
   return(merged_indicators)
 }

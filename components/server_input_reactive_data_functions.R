@@ -4,15 +4,15 @@
 #' @param year_when_estimations_start Reactive expression containing start year
 #' @return Reactive expression returning sorted unique years
 get_available_years <- function(df_baseline, year_when_estimations_start) {
-  reactive({
-    req(df_baseline(), year_when_estimations_start())
+  shiny::reactive({
+    shiny::req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
 
     df_baseline() %>%
-      filter(year >= projections_start_in) %>%
-      pull(year) %>%
-      unique() %>%
-      sort()
+      dplyr::filter(year >= projections_start_in) %>%
+      dplyr::pull(year) %>%
+      base::unique() %>%
+      base::sort()
   })
 }
 
@@ -21,9 +21,9 @@ get_available_years <- function(df_baseline, year_when_estimations_start) {
 #' @param shock_values ReactiveValues object containing pb, ir, and gdp shocks
 #' @return Reactive expression returning dataframe of shock values
 get_reactive_shock_values <- function(available_years, shock_values) {
-  reactive({
+  shiny::reactive({
     years <- available_years()
-    req(years)
+    shiny::req(years)
 
     data.frame(
       year      = years,
@@ -39,13 +39,13 @@ get_reactive_shock_values <- function(available_years, shock_values) {
 #' @param year_when_estimations_start Reactive expression containing start year
 #' @return Reactive expression returning filtered primary balance data
 get_pb_data <- function(df_baseline, year_when_estimations_start) {
-  reactive({
-    req(df_baseline(), year_when_estimations_start())
+  shiny::reactive({
+    shiny::req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
 
     df_baseline() %>%
-      select(year, value = GGXONLB_NGDP) %>%
-      filter(year >= projections_start_in)
+      dplyr::select(year, value = GGXONLB_NGDP) %>%
+      dplyr::filter(year >= projections_start_in)
   })
 }
 
@@ -54,13 +54,13 @@ get_pb_data <- function(df_baseline, year_when_estimations_start) {
 #' @param year_when_estimations_start Reactive expression containing start year
 #' @return Reactive expression returning filtered interest rate data
 get_ir_data <- function(df_baseline, year_when_estimations_start) {
-  reactive({
-    req(df_baseline(), year_when_estimations_start())
+  shiny::reactive({
+    shiny::req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
 
     df_baseline() %>%
-      select(year, value = real_effective_rate) %>%
-      filter(year >= projections_start_in)
+      dplyr::select(year, value = real_effective_rate) %>%
+      dplyr::filter(year >= projections_start_in)
   })
 }
 
@@ -69,13 +69,13 @@ get_ir_data <- function(df_baseline, year_when_estimations_start) {
 #' @param year_when_estimations_start Reactive expression containing start year
 #' @return Reactive expression returning filtered GDP data
 get_gdp_data <- function(df_baseline, year_when_estimations_start) {
-  reactive({
-    req(df_baseline(), year_when_estimations_start())
+  shiny::reactive({
+    shiny::req(df_baseline(), year_when_estimations_start())
     projections_start_in <- year_when_estimations_start()
 
     df_baseline() %>%
-      select(year, value = NGDP_RPCH) %>%
-      filter(year >= projections_start_in)
+      dplyr::select(year, value = NGDP_RPCH) %>%
+      dplyr::filter(year >= projections_start_in)
   })
 }
 
@@ -93,8 +93,10 @@ df_to_list <- function(df, shock_name) {
       return(as.list(values))
     },
     error = function(e) {
-      stop(sprintf("Error converting %s data to list: %s",
-                   shock_name, e$message))
+      stop(sprintf(
+        "Error converting %s data to list: %s",
+        shock_name, e$message
+      ))
     }
   )
 }
@@ -105,7 +107,7 @@ df_to_list <- function(df, shock_name) {
 #' @param gdp_data Reactive expression containing GDP data
 #' @return Reactive expression returning list of coefficients
 get_coefficients <- function(pb_data, ir_data, gdp_data) {
-  reactive({
+  shiny::reactive({
     list(
       pb = df_to_list(pb_data(), "Primary Balance"),
       ir = df_to_list(ir_data(), "Interest Rate"),

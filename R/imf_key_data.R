@@ -93,8 +93,8 @@ imf_key_data <- function() {
           x = df_clean_countries,
           file = "data/IMFweo.rds", compress = "xz"
         )
-
-        return(df_clean_countries) # Always return the data frame
+        # Always return the data frame
+        return(df_clean_countries)
       } else {
         message("Not a release month. Current month: ", current_month)
         return(NULL)

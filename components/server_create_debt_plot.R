@@ -1,27 +1,27 @@
 # starts ------------------------------------------------------------------
 server_create_debt_plot <- function(df_long) {
   # Get min value for y-axis (rounded down to nearest whole number)
-  y_min <- floor(min(df_long$outcome))
+  y_min <- base::floor(base::min(df_long$outcome))
 
   df_long %>%
-    group_by(indicator) %>%
-    e_charts(year) %>%
-    e_line(outcome) %>%
-    e_x_axis(
+    dplyr::group_by(indicator) %>%
+    echarts4r::e_charts(year) %>%
+    echarts4r::e_line(outcome) %>%
+    echarts4r::e_x_axis(
       name = "",
       type = "category"
     ) %>%
-    e_y_axis(
+    echarts4r::e_y_axis(
       name = "Debt (% of GDP)",
       scale = TRUE,
       min = y_min
     ) %>%
-    e_legend(
+    echarts4r::e_legend(
       top = "0",
       orient = "horizontal",
       x = "center"
     ) %>%
-    e_tooltip(
+    echarts4r::e_tooltip(
       trigger = "axis",
       formatter = htmlwidgets::JS("
         function(params) {
@@ -38,7 +38,7 @@ server_create_debt_plot <- function(df_long) {
         type = "cross"
       )
     ) %>%
-    e_grid(
+    echarts4r::e_grid(
       containLabel = TRUE,
       top = "15%"
     )
