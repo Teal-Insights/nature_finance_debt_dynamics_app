@@ -43,8 +43,9 @@ ui <- bslib::page_navbar(
   title = div(
     class = "header-container",
     tags$img(
-      src = "logo.svg",
-      class = "header-logo"
+      src = "ssdh_logo.svg",
+      class = "header-logo",
+      style = "border-right: 2px solid white; padding-right: 10px; height: 60px"
     ),
     span(
       class = "header-title",
@@ -54,7 +55,7 @@ ui <- bslib::page_navbar(
   header = div(),
   tags$head(
     # icon part
-    tags$link(rel = "icon", type = "image/x-icon", href = "icon.png"),
+    tags$link(rel = "icon", type = "image/x-icon", href = "ssdh_icon.png"),
     # navbar css file
     tags$link(
       rel = "stylesheet", type = "text/css",
