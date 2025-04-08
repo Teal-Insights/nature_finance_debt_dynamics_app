@@ -12,10 +12,9 @@ source(file = "components/server_debt_projections.R")
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session) {
-  df_countries <- imfweo::weo_list_countries() %>%
-    dplyr::rename(iso3c = "country_code", label = "country_name")
+  df_countries <- imf_countries()
   # getting IMF weo data
-  imf_key_data()
+  # imf_key_data()
 
   # Call the header component
   server_create_country_headers(id = "id", output = output, input = input)

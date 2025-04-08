@@ -20,9 +20,9 @@ source(file = "R/ui_create_shock_table.R")
 source(file = "components/ui_footer_component.R")
 source(file = "components/ui_documentation_component.R")
 # data: -------------------------------------------------------------------
-df_countries <- imfweo::weo_list_countries() %>%
-  rename(iso3c = "country_code", label = "country_name")
-
+# df_countries <- imfweo::weo_list_countries() %>%
+#   rename(iso3c = "country_code", label = "country_name")
+df_countries <- imf_countries()
 # pickers: ----------------------------------------------------------------
 select_country <- df_countries %>%
   filter(!is.na(label)) %>%
