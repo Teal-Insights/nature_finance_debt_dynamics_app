@@ -19,11 +19,6 @@ jobs:
         with:
           r-version: '4.4.3'
 
-      - name: Install renv and rsconnect
-        run: |
-          install.packages(c("renv", "rsconnect"))
-        shell: Rscript {0}
-        
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -38,7 +33,12 @@ jobs:
             libpng-dev \
             libtiff5-dev \
             libjpeg-dev
-
+      
+      - name: Install renv and rsconnect
+        run: |
+          install.packages(c("renv", "rsconnect"))
+        shell: Rscript {0}
+        
       - name: Cache renv packages
         uses: actions/cache@v3
         with:
