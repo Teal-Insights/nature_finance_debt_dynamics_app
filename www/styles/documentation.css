@@ -1,8 +1,44 @@
+/* --------------------- CONTAINER SPACING --------------------- */
+/* Remove container spacing from top and bottom */
+.container {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ensure the first card has no top margin */
+.container > .card:first-child,
+.container > div:first-child > .card:first-child {
+  margin-top: 0 !important;
+}
+
+/* Ensure the last card has no bottom margin */
+.container > .card:last-child,
+.container > div:last-child > .card:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Adjust main content padding if needed */
+main, .main-content, #main-content {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Reset any Bootstrap row margins that might add space */
+.row {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* --------------------- CARD SPACING --------------------- */
 .math-section {
   background-color: #f8f9fa;
-  padding: 20px;
+  padding: 12px 20px 8px 20px; /* Reduced top and bottom padding */
   border-radius: 5px;
-  margin: 10px 0;
+  margin: 0 0 0 0; /* Removed all margins */
   overflow: visible;
   height: auto !important;
   min-height: auto !important;
@@ -10,27 +46,57 @@
 
 .math-section h5 {
   color: #2c3e50;
-  margin-top: 20px;
-  margin-bottom: 10px;
+  margin-top: 2px;
+  margin-bottom: 8px;
   font-weight: 600;
+}
+
+/* Special case for first h5 to remove extra space - apply to ALL cards */
+.card-header + .card-body .math-section h5:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Reduce bottom space for last elements in math sections */
+.math-section > *:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Reduce padding for all card bodies */
+.card-body {
+  padding: 0.75rem 0.75rem 0.5rem 0.75rem !important; /* Reduced bottom padding */
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Apply padding reduction to all math sections */
+.card-body .math-section {
+  padding-top: 8px;
 }
 
 .math-section h6 {
   color: #34495e;
-  margin-top: 15px;
-  margin-bottom: 8px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   font-weight: 500;
 }
 
 .math-section p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem; /* Reduced bottom margin */
   line-height: 1.6;
   text-align: justify;
 }
 
 .math-section ul {
   margin-left: 20px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem; /* Reduced bottom margin */
+}
+
+/* Reduce bottom margin on lists */
+.math-section ul:last-child,
+.math-section ol:last-child {
+  margin-bottom: 0;
 }
 
 .math-section code {
@@ -55,28 +121,203 @@
 .card {
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem; /* Reduced bottom margin */
 }
 
 .card-header {
   background-color: #2c3e50 !important;
   color: #fff !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1.25rem; /* Reduced padding */
 }
 
-.card-body {
-  overflow: visible !important;
-  height: auto !important;
+/* Target only the marker/bullet itself */
+.math-section li::marker {
+  color: #0aad18;
+}
+/* Ensure text content stays black */
+.math-section li {
+  color: black;
 }
 
-@media screen and (max-width: 768px) {
+/* --------------------- EQUATION HANDLING --------------------- */
+/* Improved equation handling */
+.equation-container {
+  width: 100%;
+  overflow-x: auto;
+  margin: 0.5em 0; /* Reduced margin */
+  padding-bottom: 5px; /* Reduced bottom padding */
+}
+
+/* Remove bottom padding if it's the last element */
+.equation-container:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.policy-eq-fix .MathJax {
+  margin-bottom: 0.6em !important; /* Reduced margin */
+}
+
+.equation-legend {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 0.5em; /* Reduced margin */
+  padding-left: 2em;
+}
+
+/* Base styles for equation containers */
+.math-section .MathJax_Display {
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 5px 0 3px 0; /* Reduced padding */
+  margin: 0.3em 0 0.2em 0 !important; /* Reduced margin */
+}
+
+/* Ensure equation tags align properly */
+.MathJax_Display > .MathJax {
+  display: inline-block !important;
+  max-width: 100%;
+  margin: 0 auto !important;
+}
+
+/* Fix for long equation lines */
+.math-section {
+  overflow-x: auto;
+}
+
+/* Make sure long superscripts don't get cut off */
+.MathJax .math sup, 
+.MathJax .math sub,
+.MathJax_SVG .math sup,
+.MathJax_SVG .math sub {
+  font-size: 80%;
+}
+
+/* Handle extremely long variable names in superscripts */
+.MathJax .texatom {
+  max-width: 100%;
+  overflow-x: visible;
+}
+
+/* For the specific policy-adjusted forecast equations that are very wide */
+.math-section h6 + .MathJax_Display {
+  overflow-x: auto;
+  padding-bottom: 10px; /* Reduced padding */
+  margin-bottom: 0.5em; /* Reduced margin */
+}
+
+/* Reduce space between equation and "Where:" section */
+.equation-container + h5 {
+  margin-top: 12px;
+}
+
+/* Reduce title spacing in all headings */
+.card-header h4 {
+  margin-bottom: 0;
+}
+
+/* Reduce space between all elements in cards */
+.card-body > * {
+  margin-top: 0.5em;
+}
+
+/* --------------------- RESPONSIVE DESIGN --------------------- */
+/* Extra small devices (phones, 575px and down) */
+@media screen and (max-width: 575px) {
   .container {
-    padding: 15px;
+    padding: 0 10px !important;
+    max-width: 100%;
+    margin: 0 !important;
   }
   
   .math-section {
-    padding: 15px;
+    padding: 8px 8px 5px 8px; /* Further reduced bottom padding */
+    font-size: 14px;
+  }
+  
+  .math-section h5 {
+    font-size: 18px;
+    margin-top: 10px; /* Reduced margin */
+    margin-bottom: 6px; /* Reduced margin */
+  }
+  
+  .math-section h6 {
+    font-size: 16px;
+    margin-top: 8px; /* Reduced margin */
+    margin-bottom: 4px; /* Reduced margin */
+  }
+  
+  .card-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .card-header h4 {
+    font-size: 18px;
+  }
+  
+  .card-body {
+    padding: 0.5rem 0.5rem 0.3rem 0.5rem !important; /* Reduced padding */
+  }
+  
+  /* Adjust equation display for small screens */
+  .MathJax {
+    font-size: 90% !important;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  .equation-container {
+    padding-bottom: 5px; /* Reduced padding */
+  }
+  
+  /* Specific fixes for the Policy-Adjusted Forecast equations */
+  .math-section h6:contains("Policy-Adjusted") + .MathJax_Display .texatom {
+    font-size: 90%;
+  }
+  
+  /* Make variable scaling more aggressive on tiny screens */
+  .MathJax .msubsup {
+    font-size: 95%;
+    vertical-align: baseline;
+  }
+}
+
+/* Small devices (landscape phones, 576px to 767px) */
+@media screen and (min-width: 576px) and (max-width: 767px) {
+  .container {
+    padding: 0 12px !important;
+    margin: 0 !important;
+  }
+  
+  .math-section {
+    padding: 10px 10px 6px 10px; /* Reduced bottom padding */
+    font-size: 15px;
+  }
+  
+  .card-header {
+    padding: 0.6rem 0.9rem;
+  }
+  
+  .card-header h4 {
+    font-size: 19px;
+  }
+  
+  .card-body {
+    padding: 0.6rem 0.6rem 0.4rem 0.6rem !important; /* Reduced padding */
+  }
+}
+
+/* Medium devices (tablets, 768px to 991px) */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  .container {
+    padding: 0 15px !important;
+    margin: 0 !important;
+  }
+  
+  .math-section {
+    padding: 12px 12px 8px 12px; /* Reduced bottom padding */
   }
   
   .card-header {
@@ -84,6 +325,116 @@
   }
   
   .card-body {
-    padding: 1rem;
+    padding: 0.75rem 0.75rem 0.5rem 0.75rem !important; /* Reduced padding */
+  }
+}
+
+/* Large devices (desktops, 992px to 1199px) */
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .container {
+    padding: 0 15px !important;
+    max-width: 960px;
+    margin: 0 auto !important;
+  }
+  
+  .math-section {
+    padding: 15px 15px 10px 15px; /* Reduced bottom padding */
+  }
+  
+  .card-header {
+    padding: 0.9rem 1.2rem;
+  }
+  
+  .card-body {
+    padding: 0.9rem 0.9rem 0.6rem 0.9rem !important; /* Reduced padding */
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media screen and (min-width: 1200px) {
+  .container {
+    padding: 0 15px !important;
+    max-width: 1140px;
+    margin: 0 auto !important;
+  }
+  
+  .math-section {
+    padding: 20px 20px 12px 20px; /* Reduced bottom padding */
+  }
+  
+  .card-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem 1rem 0.7rem 1rem !important; /* Reduced padding */
+  }
+}
+
+/* Ensure math equations are properly displayed on all devices */
+@media screen and (max-width: 991px) {
+  /* Make equations scrollable on smaller screens when needed */
+  .math-section .MathJax_Display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+  
+  /* Style adjustments for scrollable equations */
+  .math-section h6 + .MathJax_Display {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    white-space: nowrap;
+  }
+  
+  /* Indicate scrollability with subtle styling */
+  .math-section h6 + .MathJax_Display::after {
+    content: '→';
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    color: #aaa;
+    font-size: 16px;
+  }
+  
+  /* Adjust tag placement */
+  .MathJax_Display > .MathJax {
+    padding-right: 20px; /* Ensure equation tag (1) isn't cut off */
+  }
+}
+
+/* Print-friendly styles */
+@media print {
+  .container {
+    width: 100%;
+    padding: 0;
+    margin: 0 !important;
+  }
+  
+  .card {
+    border: 1px solid #ddd;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+  
+  .card-header {
+    background-color: #f8f9fa !important;
+    color: #000 !important;
+  }
+  
+  .math-section {
+    padding: 15px 15px 10px 15px; /* Reduced bottom padding */
+    background-color: white;
+  }
+  
+  .math-section .MathJax_Display {
+    overflow: visible;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    max-width: 100% !important;
   }
 }

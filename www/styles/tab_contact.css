@@ -1,0 +1,351 @@
+/* Contact section styles - optimized for all screen sizes */
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center all content horizontally */
+}
+
+.team-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.team-header h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.profiles-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center profile cards */
+  gap: 2rem;
+  margin-bottom: 3rem;
+  width: 100%;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  width: 350px; /* Maintained original width */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  transition: transform 0.3s ease;
+}
+
+.profile-card:hover {
+  transform: translateY(-5px);
+}
+
+.profile-photo-container {
+  height: 250px;
+  overflow: hidden;
+}
+
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-right: 0.5rem; /* Add some padding on the right */
+  overflow: hidden; /* Handle overflow */
+}
+
+/* Fixed heights for consistent horizontal alignment */
+.name-row {
+  height: 45px;
+}
+
+.title-row {
+  height: 40px;
+}
+
+.company-row {
+  height: 60px; /* Increased height for company row */
+}
+
+.linkedin-row {
+  height: 40px;
+}
+
+.email-row {
+  height: 40px;
+  margin-bottom: 0; /* Removes space at bottom */
+}
+
+.profile-info {
+  padding: 1.5rem 1.5rem 1rem 1.5rem; /* Add some bottom padding */
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+.profile-title, .profile-company {
+  margin: 0 0 0.5rem 0;
+  color: #666;
+  font-weight: normal;
+  font-size: 1rem;
+}
+
+.profile-company {
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.profile-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.profile-section {
+  width: 100%;
+  margin-bottom: 20px; /* Consistent spacing between all sections */
+}
+
+.name-section, .title-section, .company-section {
+  display: flex;
+  align-items: center;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px; /* Match the margin of other sections */
+}
+
+/* LinkedIn and email styles with fixes */
+.profile-linkedin, .profile-email {
+  color: #555;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.profile-linkedin {
+  font-size: 1rem;
+}
+
+.profile-email {
+  word-break: break-all; /* Break long email addresses */
+  font-size: .9rem;
+}
+
+.profile-linkedin:hover, .profile-email:hover {
+  text-decoration: underline;
+}
+
+.bi-linkedin {
+  color: #0077b5;
+  font-size: 1.25rem;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+  margin-right: 5px; /* Ensure space between icon and text */
+}
+
+@media (max-width: 576px) {
+  .profile-linkedin, .profile-email {
+    font-size: 0.9rem; /* Smaller font on mobile */
+  }
+  
+  .email-row, .linkedin-row {
+    height: auto; /* Allow height to adjust based on content */
+    min-height: 30px; /* Minimum height */
+    padding-bottom: 5px; /* Add some bottom padding */
+  }
+  
+  .bi-linkedin {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .profile-linkedin, .profile-email {
+    font-size: 0.8rem; /* Even smaller font on very small screens */
+  }
+}
+
+/* Responsive adjustments */
+/* Tablets */
+@media (max-width: 992px) {
+  .contact-container {
+    padding: 1.5rem;
+  }
+  
+  .team-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .profiles-grid {
+    gap: 1.5rem;
+  }
+  
+  .profile-card {
+    width: 300px;
+  }
+  
+  .profile-photo-container {
+    height: 220px;
+  }
+}
+
+/* Large Phones and Small Tablets */
+@media (max-width: 768px) {
+  .contact-container {
+    padding: 1.25rem;
+  }
+  
+  .team-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .team-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .profiles-grid {
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  
+  .profile-card {
+    width: 100%;
+    max-width: 350px;
+  }
+  
+  .profile-photo-container {
+    height: 200px;
+  }
+  
+  .profile-info {
+    padding: 1.25rem 1.25rem 0.75rem 1.25rem;
+  }
+  
+  .name-row {
+    height: 40px;
+  }
+  
+  .title-row, .linkedin-row, .email-row {
+    height: 35px;
+  }
+  
+  .company-row {
+    height: 50px;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 576px) {
+  .contact-container {
+    padding: 1rem;
+  }
+  
+  .team-header {
+    margin-bottom: 1.25rem;
+  }
+  
+  .team-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .profiles-grid {
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-card {
+    max-width: 320px;
+  }
+  
+  .profile-photo-container {
+    height: 180px;
+  }
+  
+  .profile-info {
+    padding: 1rem 1rem 0.5rem 1rem;
+  }
+  
+  .profile-title, .profile-company {
+    font-size: 0.9rem;
+  }
+  
+  .name-row {
+    height: 35px;
+  }
+  
+  .title-row, .linkedin-row, .email-row {
+    height: 30px;
+  }
+  
+  .company-row {
+    height: 45px;
+  }
+  
+  .profile-section {
+    margin-bottom: 15px;
+  }
+  
+  .contact-item {
+    margin-bottom: 15px;
+  }
+}
+
+/* Very Small Mobile Phones */
+@media (max-width: 375px) {
+  .profile-card {
+    max-width: 100%;
+  }
+  
+  .profile-photo-container {
+    height: 170px;
+  }
+  
+  .profile-info {
+    padding: 0.75rem 0.75rem 0.4rem 0.75rem;
+  }
+  
+  .profile-title, .profile-company {
+    font-size: 0.85rem;
+    margin: 0 0 0.4rem 0;
+  }
+  
+  .profile-company {
+    margin-bottom: 0.75rem;
+  }
+  
+  .name-row {
+    height: 32px;
+  }
+  
+  .title-row, .linkedin-row, .email-row {
+    height: 28px;
+  }
+  
+  .company-row {
+    height: 40px;
+  }
+  
+  .bi-linkedin {
+    font-size: 1.1rem;
+  }
+}

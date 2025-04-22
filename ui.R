@@ -19,6 +19,7 @@ source(file = "R/ui_create_shock_table.R")
 # components
 source(file = "components/ui_footer_component.R")
 source(file = "components/ui_documentation_component.R")
+source(file = "components/ui_contact_component.R")
 # data: -------------------------------------------------------------------
 # df_countries <- imfweo::weo_list_countries() %>%
 #   rename(iso3c = "country_code", label = "country_name")
@@ -78,24 +79,31 @@ ui <- bslib::page_navbar(
     tags$link(
       rel = "stylesheet", type = "text/css",
       href = "styles/documentation.css"
+    ),
+    # contact
+    tags$link(
+      rel = "stylesheet", type = "text/css",
+      href = "styles/tab_contact.css"
     )
   ),
   # adding space between title and other tabs
   bslib::nav_spacer(),
   # theme of the app
-  theme = bslib::bs_theme(
-    version = 5,
-    bootswatch = "minty"
-  ) %>%
-    bslib::bs_add_rules("
-      hr {
-        margin-top: 5px;
-        margin-bottom: 5px;
-      }
-    "),
+  theme = bslib::bs_theme(version = 5, bootswatch = "minty"),
+  
+  # -------------------------------------------------------------------------
   # Home Panel
+  # -------------------------------------------------------------------------
+  # bslib::nav_panel(
+  #   title = "Home",
+  #   bslib::card()
+  # ),
+
+  # -------------------------------------------------------------------------
+  # Analysis
+  # -------------------------------------------------------------------------
   bslib::nav_panel(
-    title = "Home",
+    title = "Analysis",
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
@@ -106,6 +114,7 @@ ui <- bslib::page_navbar(
             inputId = "id_country",
             label = "Select: Country",
             choices = select_country,
+            selected = "Argentina",
             options = shinyWidgets::pickerOptions(
               actionsBox = TRUE,
               size = 10,
@@ -184,10 +193,7 @@ ui <- bslib::page_navbar(
               full_screen = TRUE,
               card_header(
                 class = "bg-primary text-white",
-                tags$span(textOutput(
-                  outputId = "selected_country_header_gdp",
-                  inline = TRUE
-                ), ": GDP Growth Shock")
+                tags$span("GDP Growth Shock")
               ),
               ui_create_shock_table("gdp")
             ),
@@ -195,10 +201,7 @@ ui <- bslib::page_navbar(
               full_screen = TRUE,
               card_header(
                 class = "bg-primary text-white",
-                tags$span(textOutput(
-                  outputId = "selected_country_header_pb",
-                  inline = TRUE
-                ), ": Primary Balance Shock")
+                tags$span("Primary Balance Shock")
               ),
               ui_create_shock_table("pb")
             ),
@@ -207,12 +210,7 @@ ui <- bslib::page_navbar(
               full_screen = TRUE,
               card_header(
                 class = "bg-primary text-white",
-                tags$span(
-                  textOutput(
-                    outputId = "selected_country_header_ir",
-                    inline = TRUE
-                  ),
-                  ": Real Interest Rate Shock"
+                tags$span("Real Interest Rate Shock"
                 )
               ),
               ui_create_shock_table("ir")
@@ -227,10 +225,7 @@ ui <- bslib::page_navbar(
             bslib::card(
               full_screen = TRUE,
               bslib::card_header(
-                tags$span(textOutput(
-                  outputId = "selected_country_header_ih",
-                  inline = TRUE
-                ), ": Historical Debt trends"),
+                tags$span("Historical Debt trends"),
                 class = "bg-primary text-white"
               ),
               echarts4r::echarts4rOutput(outputId = "plot_full_input")
@@ -238,10 +233,7 @@ ui <- bslib::page_navbar(
             bslib::card(
               full_screen = TRUE,
               bslib::card_header(
-                tags$span(textOutput(
-                  outputId = "selected_country_header_ip",
-                  inline = TRUE
-                ), ": Projected Debt trends"),
+                tags$span("Projected Debt trends"),
                 class = "bg-primary text-white"
               ),
               echarts4r::echarts4rOutput(outputId = "plot_projection_input")
@@ -251,9 +243,10 @@ ui <- bslib::page_navbar(
       )
     )
   ),
-
-  # Graph panel: ------------------------------------------------------------
-  # Graph Panel
+  
+  # -------------------------------------------------------------------------
+  # Graph panel
+  # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Graph",
     bslib::card(
@@ -293,10 +286,7 @@ ui <- bslib::page_navbar(
             bslib::card(
               full_screen = TRUE,
               bslib::card_header(
-                tags$span(textOutput(
-                  outputId = "selected_country_header_gh",
-                  inline = TRUE
-                ), ": Historical Debt trends"),
+                tags$span("Historical Debt trends"),
                 class = "bg-primary text-white"
               ),
               echarts4r::echarts4rOutput(outputId = "plot_full")
@@ -305,10 +295,7 @@ ui <- bslib::page_navbar(
               width = 1,
               full_screen = TRUE,
               bslib::card_header(
-                tags$span(textOutput(
-                  outputId = "selected_country_header_gp",
-                  inline = TRUE
-                ), ": Projected Debt trends"),
+                tags$span("Projected Debt trends"),
                 class = "bg-primary text-white"
               ),
               echarts4r::echarts4rOutput(outputId = "plot_projection")
@@ -318,12 +305,7 @@ ui <- bslib::page_navbar(
             width = 1,
             full_screen = TRUE,
             bslib::card_header(
-              tags$span(
-                textOutput(
-                  outputId = "selected_country_header_gt",
-                  inline = TRUE
-                ),
-                ": Shock analysis result table"
+              tags$span("Shock analysis result table"
               ),
               class = "bg-primary text-white"
             ),
@@ -341,7 +323,10 @@ ui <- bslib::page_navbar(
       )
     )
   ),
+  
+  # -------------------------------------------------------------------------
   # Data Panel
+  # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Data",
     bslib::card(
@@ -379,12 +364,28 @@ ui <- bslib::page_navbar(
       )
     )
   ),
-  # Documentation Panel
+  # -------------------------------------------------------------------------
+  # Documentation panel
+  # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Documentation",
+    value = "docs",
     # Documentation component
     ui_documentation_component()
   ),
-  # Footer component
-  ui_footer_component()
+  # -------------------------------------------------------------------------
+  # Contact panel
+  # -------------------------------------------------------------------------
+  bslib::nav_panel(
+    title = "Contact",
+    value = "contact",
+    # contact component
+    ui_contact_component()
+  ),
+  # -------------------------------------------------------------------------
+  # general footer
+  # -------------------------------------------------------------------------
+  footer = ui_footer_component()
 )
+
+# end: --------------------------------------------------------------------

@@ -12,44 +12,58 @@ create_section_card <- function(title, content) {
   )
 }
 
-# Content sections as separate variables for better maintainability
+# Content sections
 overview_content <- "
-  <p>The Debt Path Explorer helps analyze how policy changes could affect a country's debt sustainability. It uses the IMF's debt dynamics framework to project how debt-to-GDP ratios evolve under different scenarios.</p>
-  
-  <h5>How It Works</h5>
-  
-  <h6><b>1. Starting Point: IMF WEO Baseline</b></h6>
-  <p>We begin with data from the IMF's World Economic Outlook (WEO), which provides:</p>
+  <h5>Development Status</h2>
+  <p>
+    The Debt Path Explorer is currently in prototype stage. This means:
+  </p>
   <ul>
-    <li>GDP growth projections</li>
-    <li>Primary fiscal balance forecasts</li>
-    <li>Government debt levels</li>
+    <li><strong>Simplified Modeling</strong>: The tool uses standard debt dynamics equations with real WEO data but employs simplified transmission channels</li>
+    <li><strong>Illustrative Projections</strong>: Results should be interpreted as directional scenarios rather than precise forecasts</li>
+    <li><strong>Conceptual Workflow</strong>: The current version demonstrates a user journey focused on understanding key debt drivers</li>
   </ul>
-  
-  <h6><b>2. Policy Adjustments</b></h6>
-  <p>Users can model policy changes by adjusting three key variables:</p>
+  <h5>Assessment Framework</h2>
+  <p>
+    The Debt Path Explorer serves as a starting point for policy analysis that:
+  </p>
   <ul>
-    <li>GDP growth rate</li>
-    <li>Real effective interest rate</li>
-    <li>Primary fiscal balance</li>
+    <li><strong>Uses IMF WEO data</strong> as a baseline for projections</li>
+    <li><strong>Allows users to model policy shocks</strong> to key debt dynamics variables</li>
+    <li><strong>Visualizes alternative debt trajectories</strong> based on user inputs</li>
+    <li><strong>Provides an accessible entry point</strong> to more sophisticated debt analysis</li>
   </ul>
-  
-  <p>For example, you might model how a new carbon credit program could improve the primary balance by 0.2% of GDP annually.</p>
-  
-  <h6><b>3. Resulting Projections</b></h6>
-  <p>The tool combines baseline values with policy adjustments to show how debt trajectories might change. This helps answer questions like:</p>
+  <h5>Development Roadmap</h2>
+  <p>
+    This tool represents the first step in a multi-phase approach:
+  </p>
   <ul>
-    <li>How much could sustainability initiatives improve debt sustainability?</li>
-    <li>What impact would lower borrowing costs from green bonds have?</li>
-    <li>How do changes in growth, interest rates, and fiscal balances interact?</li>
+    <li><strong>Current phase</strong>: Functional prototype with real data and basic scenario modeling</li>
+    <li><strong>Next phase</strong>: Enhanced transmission channels with empirically calibrated relationships</li>
+    <li><strong>Future phase</strong>: Integration with more comprehensive DSA frameworks</li>
+    <li><strong>Final phase</strong>: Expanded country coverage and macroeconomic variables</li>
   </ul>
-  <h5>Important Notes</h5>
+  <h5>Understanding the Results</h2>
+  <p>
+    Results from this tool should be interpreted as:
+  </p>
   <ul>
-    <li>The tool provides a simplified but rigorous starting point for policy analysis</li>
-    <li>Results should be interpreted as illustrative projections, not precise forecasts</li>
-    <li>For detailed country analysis, this tool should complement rather than replace full DSA frameworks</li>
+    <li><strong>Directional guidance</strong> on how policy changes might affect debt trajectories</li>
+    <li><strong>Starting points</strong> for more detailed country-specific analysis</li>
+    <li><strong>Relative comparisons</strong> between baseline and alternative scenarios</li>
+  </ul>
+  <h5>Providing Feedback</h2>
+  <p>
+    Your insights are crucial to ensuring this tool evolves to meet analytical needs. We're particularly interested in:
+  </p>
+  <ul>
+    <li>Is the conceptual workflow intuitive and valuable?</li>
+    <li>What additional variables or features would make this tool more useful?</li>
+    <li>How could this tool complement your existing analytical processes?</li>
+    <li>What barriers might prevent adoption by debt management offices?</li>
   </ul>
 "
+
 key_equation_content <- "
   <h5>Debt Dynamics Equation:</h5>
   \\[ d_t = \\frac{(1 + r_t)}{(1 + g_t)}d_{t-1} - pb_t \\]
@@ -104,7 +118,7 @@ ui_documentation_component <- function() {
   card_body(
     div(
       class = "container",
-      create_section_card("Overview", overview_content),
+      create_section_card("About This Prototype", overview_content),
       create_section_card("Key Equation", key_equation_content),
       create_section_card("Methodology", methodology_content)
     )
