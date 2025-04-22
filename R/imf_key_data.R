@@ -3,7 +3,7 @@ imf_key_data <- function() {
   current_month <- lubridate::month(x = Sys.Date(), label = TRUE, abbr = FALSE)
   releases_months <- c("April", "October")
   releases_status <- (current_month %in% releases_months)
-
+  
   # Add error handling and default return value
   tryCatch(
     {
@@ -18,32 +18,68 @@ imf_key_data <- function() {
             end = 3
           )) %>%
           dplyr::mutate(
-            full_link = paste0(
-              "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/"
-              , year, "/", month, "/WEO", month_code, year, "all.ashx"
+            month = tolower(month),
+            full_link = glue::glue(
+              "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/{year}/{month}/WEO{month_code}{year}all.ashx"
             )
           ) %>%
           dplyr::slice(1) %>%
           dplyr::pull(full_link)
-
-        # Check if URL is accessible
-        if (!RCurl::url.exists(countries)) {
-          warning("URL not accessible")
-          return(NULL)
+        
+        # URL check using
+        url_check <- tryCatch({
+          if (!requireNamespace("httr", quietly = TRUE)) {
+            install.packages("httr")
+            library(httr)
+          } else {
+            library(httr)
+          }
+          
+          response <- httr::HEAD(
+            countries,
+            httr::user_agent("R/4.2.0 (https://www.r-project.org/)"),
+            httr::timeout(10)
+          )
+          
+          status <- httr::status_code(response)
+          status >= 200 && status < 400
+        }, error = function(e) {
+          # If HEAD request fails, try GET as a fallback
+          tryCatch({
+            test_get <- httr::GET(
+              countries,
+              httr::user_agent("R/4.2.0 (https://www.r-project.org/)"),
+              httr::timeout(10)
+            )
+            status <- httr::status_code(test_get)
+            status >= 200 && status < 400
+          }, error = function(e2) {
+            FALSE
+          })
+        })
+        
+        # If URL check fails, try a direct download attempt as last resort
+        if (!url_check) {
+          message("URL check failed, attempting direct download...")
         }
-
-        # raw data
-        df_raw_countries <- read.delim(file = countries, skipNul = TRUE)
-
+        
+        # Try to read data even if URL check failed
+        df_raw_countries <- tryCatch({
+          read.delim(file = countries, skipNul = TRUE)
+        }, error = function(e) {
+          warning("Failed to download data: ", e$message)
+          return(NULL)
+        })
+        
         if (is.null(df_raw_countries) || nrow(df_raw_countries) == 0) {
           warning("No data retrieved")
           return(NULL)
         }
-
+        
         base_columns <- c(
           names(df_raw_countries)[!startsWith(names(df_raw_countries), "X")]
         )
-
+        
         # clean data
         df_clean_countries <- df_raw_countries %>%
           tidyr::pivot_longer(
@@ -87,12 +123,18 @@ imf_key_data <- function() {
               "NGDP_RPCH", "GGXONLB_NGDP", "GGXWDG_NGDP"
             )
           )
-
+        
         # export data
-        readr::write_rds(
-          x = df_clean_countries,
-          file = "data/IMFweo.rds", compress = "xz"
-        )
+        tryCatch({
+          readr::write_rds(
+            x = df_clean_countries,
+            file = "data/IMFweo.rds", compress = "xz"
+          )
+          message("Data successfully saved to data/IMFweo.rds")
+        }, error = function(e) {
+          warning("Failed to save data: ", e$message)
+        })
+        
         # Always return the data frame
         return(df_clean_countries)
       } else {
@@ -106,4 +148,5 @@ imf_key_data <- function() {
     }
   )
 }
+
 # ends --------------------------------------------------------------------
