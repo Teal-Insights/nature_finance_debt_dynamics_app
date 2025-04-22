@@ -2,22 +2,25 @@ name: Deploy App
 
 on:
   push:
-    branches: [ main ]  # Change to your main branch name if different
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Add permissions to read organization secrets
     permissions:
       contents: read
       id-token: write
+
+    env:
+      GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.4.3'  # Updated to use R 4.4.3
+          r-version: '4.4.3'
 
       - name: Install system dependencies
         run: |
@@ -52,17 +55,14 @@ jobs:
 
       - name: Restore and install dependencies through renv
         run: |
-          # Speed up renv restore by setting options
-          options(
+          invisible(options(
             renv.config.cache.enabled = TRUE,
             renv.config.cache.symlinks = TRUE,
             renv.config.install.verbose = FALSE
-          )
-          
-          # Use restore with automatic package installation
+          ))
+
           renv::restore(prompt = FALSE)
-          
-          # Make sure rsconnect is available for deployment
+
           if (!requireNamespace("rsconnect", quietly = TRUE)) {
             install.packages("rsconnect")
           }
@@ -79,43 +79,44 @@ jobs:
           echo "Account exists: $([ ! -z "$SHINYAPPS_ACCOUNT" ] && echo "Yes" || echo "No")"
           echo "Account value: $SHINYAPPS_ACCOUNT"
         shell: bash
-        
+
       - name: Authorize and deploy app
         env:
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
+          GITHUB_REPOSITORY_NAME: ${{ env.GITHUB_REPOSITORY_NAME }}
         run: |
-          # Set account info with explicit variables
           token <- Sys.getenv("SHINYAPPS_TOKEN")
           secret <- Sys.getenv("SHINYAPPS_SECRET")
           account <- Sys.getenv("SHINYAPPS_ACCOUNT")
-          
-          # Show account name for debugging (safe to display in logs)
-          cat("Using account name:", account, "\n")
-          
-          # Validate that we have all required authentication info
+          app_name <- Sys.getenv("GITHUB_REPOSITORY_NAME")
+
+          cat("Using account:", account, "\n")
+          cat("Deploying app:", app_name, "\n")
+
           if (token == "" || secret == "" || account == "") {
-            stop("Missing shinyapps.io authentication information. Please check your organization secrets.")
+            stop("Missing shinyapps.io authentication information.")
           }
-          
+
           rsconnect::setAccountInfo(
             name = account,
             token = token,
             secret = secret
           )
-          
-          # Create a list of files to exclude (rsconnect folder and any other unwanted files)
+
           exclude_list <- c("rsconnect/", ".git/", ".github/", ".gitignore", "README.md")
-          
-          # Deploy with renv but exclude the rsconnect folder
+
           rsconnect::deployApp(
-            appName = "${{ github.event.repository.name }}",
+            appDir = ".",
+            appName = app_name,
             account = account,
             forceUpdate = TRUE,
-            appFiles = NULL,  # Setting to NULL will include all files except those in appFileIgnore
+            appFiles = NULL,
             appFileIgnore = exclude_list,
             appDependencies = TRUE
           )
         shell: Rscript {0}
-        shell: Rscript {0}
+
+      - name: Post-deployment message
+        run: echo "Deployment complete!"
