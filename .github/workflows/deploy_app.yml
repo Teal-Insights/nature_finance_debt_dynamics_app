@@ -72,24 +72,24 @@ jobs:
         env:
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
-          SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
+          SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
         run: |
           echo "Token exists: $([ ! -z "$SHINYAPPS_TOKEN" ] && echo "Yes" || echo "No")"
           echo "Secret exists: $([ ! -z "$SHINYAPPS_SECRET" ] && echo "Yes" || echo "No")"
-          echo "Account exists: $([ ! -z "$SHINYAPPS_ACCOUNT" ] && echo "Yes" || echo "No")"
-          echo "Account value: $SHINYAPPS_ACCOUNT"
+          echo "Account exists: $([ ! -z "$SHINYAPPS_USER" ] && echo "Yes" || echo "No")"
+          echo "Account value: $SHINYAPPS_USER"
         shell: bash
 
       - name: Authorize and deploy app
         env:
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
-          SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
+          SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
           GITHUB_REPOSITORY_NAME: ${{ env.GITHUB_REPOSITORY_NAME }}
         run: |
           token <- Sys.getenv("SHINYAPPS_TOKEN")
           secret <- Sys.getenv("SHINYAPPS_SECRET")
-          account <- "tealinsights"
+          account <- Sys.getenv("SHINYAPPS_USER")
           app_name <- Sys.getenv("GITHUB_REPOSITORY_NAME")
 
           cat("Using account:", account, "\n")
