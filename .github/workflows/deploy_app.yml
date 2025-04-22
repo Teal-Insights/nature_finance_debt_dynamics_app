@@ -89,7 +89,7 @@ jobs:
         run: |
           token <- Sys.getenv("SHINYAPPS_TOKEN")
           secret <- Sys.getenv("SHINYAPPS_SECRET")
-          account <- Sys.getenv("SHINYAPPS_ACCOUNT")
+          account <- "tealinsights"
           app_name <- Sys.getenv("GITHUB_REPOSITORY_NAME")
 
           cat("Using account:", account, "\n")
