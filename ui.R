@@ -44,15 +44,18 @@ ui <- bslib::page_navbar(
     class = "header-container",
     tags$img(
       src = "ssdh_logo.svg",
-      class = "header-logo",
-      style = "border-right: 2px solid white; padding-right: 10px; height: 60px"
+      class = "header-logo"
     ),
-    span(
-      class = "header-title",
-      "Debt Path Explorer"
+    div(
+      class = "header-title-container",
+      style = "display: flex; flex-direction: column; justify-content: center;",
+      span(
+        class = "header-title",
+        style = "font-size: 1.5rem; font-weight: 600; color: white; line-height: 1.2;",
+        "Debt Path Explorer"
+      )
     )
   ),
-  header = div(),
   tags$head(
     # icon part
     tags$link(rel = "icon", type = "image/x-icon", href = "ssdh_icon.png"),
