@@ -37,6 +37,7 @@ projection_years <- seq(from = current_year, by = 1, length.out = 4)
 ui <- bslib::page_navbar(
   # Initialize shinyjs
   shinyjs::useShinyjs(),
+  id = "main_navbar",
   # nav section background colour
   bg = "#2c3e50",
   title = div(
@@ -339,6 +340,7 @@ ui <- bslib::page_navbar(
   # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Analysis",
+    value = "analysis",
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
@@ -414,6 +416,7 @@ ui <- bslib::page_navbar(
   # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Graph",
+    value = "graph",
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
@@ -494,6 +497,7 @@ ui <- bslib::page_navbar(
   # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Data",
+    value = "data",
     bslib::card(
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(

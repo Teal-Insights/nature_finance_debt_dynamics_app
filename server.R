@@ -19,6 +19,23 @@ source(file = "components/server_api_call.R")
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session) {
   # -------------------------------------------------------------------------
+  # Hide tabs initially
+  # -------------------------------------------------------------------------
+  shiny::hideTab(inputId = "main_navbar", target = "analysis")
+  shiny::hideTab(inputId = "main_navbar", target = "graph")
+  shiny::hideTab(inputId = "main_navbar", target = "data")
+  shiny::hideTab(inputId = "main_navbar", target = "docs")
+  
+  observeEvent(input$id_country, {
+    if (!is.null(input$id_country) && input$id_country != "") {
+      shiny::showTab(inputId = "main_navbar", target = "analysis")
+      shiny::showTab(inputId = "main_navbar", target = "graph")
+      shiny::showTab(inputId = "main_navbar", target = "data")
+      shiny::showTab(inputId = "main_navbar", target = "docs")
+      # updateNavbarPage(session, "main_navbar", selected = "analysis")
+    }
+  })
+  # -------------------------------------------------------------------------
   # inputs preparation
   # -------------------------------------------------------------------------
   # selected country
