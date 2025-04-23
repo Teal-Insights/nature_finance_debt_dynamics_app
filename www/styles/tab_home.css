@@ -1,0 +1,259 @@
+/* Original styles */
+.kpi-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+
+.bullet-point {
+  font-size: 30px;
+  line-height: 1;
+  color: #0aad18;
+}
+
+/*---------------------------------------------------------------------------*/
+/*Purpose of This Tool*/
+/*---------------------------------------------------------------------------*/
+.green-bullets li {
+  color: #0aad18;
+}
+
+.green-bullets li span {
+  color: black;
+  font-size: 1.1em;
+}
+    
+/*title on border*/
+.home-box-container {
+  position: relative;
+  margin-top: 15px;
+}
+
+.home-box-title {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  background-color: white;
+  padding: 0 10px;
+  font-weight: 600;
+  font-size: 1.1em;
+  color: #2c946c;
+  z-index: 1;
+}
+
+.home-box {
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  padding: 10px;
+  position: relative;
+  margin-bottom: 15px; /* Added to ensure proper spacing */
+  overflow: visible; /* Added to prevent content cutoff */
+}
+
+.home-box p {
+  color: #000c;
+  margin-bottom: 8px;
+  padding-top: 0.4em;
+  font-size: 1.2em;
+}
+
+.home-box h6 {
+  font-weight: 600;
+}
+
+.top-header {
+  padding-top: 12px;
+}
+
+/*---------------------------------------------------------------------------*/
+/*all paragraphs*/
+/*---------------------------------------------------------------------------*/
+.steps p {
+  color: #000c;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+
+.steps h5 {
+  font-weight: 600;
+  margin-top: 0.8em;
+  margin-bottom: 0.4em;
+}
+
+/*---------------------------------------------------------------------------*/
+/*color legend - UPDATED FOR CONSISTENT HORIZONTAL LAYOUT*/
+/*---------------------------------------------------------------------------*/
+/* Color legend styling for consistent horizontal layout */
+.color-legend {
+  display: inline-block;
+  width: 160px;
+  height: 40px;
+  margin-right: 15px;
+  margin-bottom: 5px;
+  padding: 8px 10px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 1.1em;
+  text-align: center;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;
+}
+
+.legend-text {
+  font-size: 1.1em;
+  padding-left: 5px;
+  flex: 1;
+}
+
+/* Color definitions */
+.legend-dark-green {
+  --bg-color: #006400;
+  --text-color: white;
+}
+
+.legend-medium-green {
+  --bg-color: #0a830a;
+  --text-color: white;
+}
+
+.legend-light-green {
+  --bg-color: #e8f5e8;
+  --text-color: black;
+}
+
+/*---------------------------------------------------------------------------*/
+/* New styles to fix scrolling and responsiveness */
+/*---------------------------------------------------------------------------*/
+
+/* Make cards expand based on content rather than scroll */
+.card, .bslib-card {
+  height: auto !important;
+  min-height: 400px;
+  overflow: visible !important;
+}
+
+.card-body, .bslib-card-body {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Ensure tab content is not cut off */
+.nav-tabs .tab-content, 
+.tab-content, 
+.tab-pane, 
+.nav-panel {
+  overflow: visible !important;
+}
+
+/* Make navset tabs work properly */
+.navset-tab-pane {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .home-box p {
+    font-size: 1em;
+  }
+  
+  .green-bullets li span {
+    font-size: 1em;
+  }
+  
+  .steps p {
+    font-size: 1em;
+  }
+  
+  .home-box-title {
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Make column layout stack on smaller screens */
+  .bslib-layout-column-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .bslib-layout-column-wrap > * {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+  
+  /* Adjust color legend for smaller screens */
+  .color-legend {
+    width: 140px;
+    font-size: 1em;
+  }
+  
+  .legend-text {
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 768px) {
+  .color-legend {
+    width: 120px;
+    height: 35px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Further adjustments for mobile */
+  .home-box {
+    padding: 8px;
+  }
+  
+  .home-box p {
+    font-size: 0.9em;
+  }
+  
+  .home-box h6 {
+    font-size: 1em;
+  }
+  
+  /* Make dropdown more mobile-friendly */
+  .picker-input {
+    width: 100% !important;
+  }
+  
+  .legend-item {
+    margin-bottom: 8px;
+  }
+  
+  .color-legend {
+    width: 100px;
+    height: 32px;
+    font-size: 0.9em;
+    padding: 5px;
+  }
+  
+  .legend-text {
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .color-legend {
+    width: 90px;
+    height: 30px;
+    margin-right: 10px;
+    font-size: 0.85em;
+  }
+  
+  .legend-text {
+    font-size: 0.85em;
+  }
+}
