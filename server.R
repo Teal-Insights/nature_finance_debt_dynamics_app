@@ -1,56 +1,83 @@
-# starts: -----------------------------------------------------------------
+# # starts: -----------------------------------------------------------------
+
+# Rscripts: ---------------------------------------------------------------
+source(file = "R/imf_key_data.R")
+source(file = "R/imf_countries.R")
+source(file = "R/imf_indicators.R")
+source(file = "R/imf_format_years.R")
+
 # loading necessary components
 source(file = "components/server_create_debt_plot.R")
 source(file = "components/server_prepare_shock_data.R")
 source(file = "components/server_excel_template.R")
-source(file = "components/server_create_country_headers.R")
 source(file = "components/server_shock_outputs.R")
 source(file = "components/server_input_reactive_data_functions.R")
 source(file = "components/server_shock_analysis.R")
-source(file = "components/server_api_call.R")
 source(file = "components/server_debt_projections.R")
+source(file = "components/server_api_call.R")
 
 # Rscripts: ---------------------------------------------------------------
 server <- function(input, output, session) {
+  # -------------------------------------------------------------------------
+  # inputs preparation
+  # -------------------------------------------------------------------------
+  # selected country
+  server_input_country <- reactive({input$id_country})
+  
+  # selected projection year
+  server_input_projection_start <- reactive({
+      as.numeric(input$projection_year)
+    })
+  # -------------------------------------------------------------------------
+  # data preparation
+  # -------------------------------------------------------------------------
+  # imf countries
   df_countries <- imf_countries()
-  # getting IMF weo data
-  # imf_key_data()
+  
+  # Get main data
+  df_main <- shiny::reactive({
+    shiny::req(server_input_country())
+    process_main_data(
+      df_countries = df_countries,
+      input_country = server_input_country(),
+      imf_data = read_imf_weo()
+    )
+  })
+  
+  # Get specific data
+  df_specific <- shiny::reactive({
+    process_specific_data(
+      main_data = df_main(),
+      projection_year = server_input_projection_start()
+    )
+  })
+  # -------------------------------------------------------------------------
+  # analysis panel
+  # -------------------------------------------------------------------------
 
-  # Call the header component
-  server_create_country_headers(id = "id", output = output, input = input)
+  # -------------------------------------------------------------------------
+  # data panel
+  # -------------------------------------------------------------------------
 
-  reactive_data <- setup_reactive_data(input, df_countries, read_imf_weo)
-
-  # get main data
-  df_main <- reactive_data$df_main
-
-  # get country specific data
-  df_specific <- reactive_data$df_specific
-
-  # projections starts after - reactive
-  year_when_estimations_start <- reactive_data$year_when_estimations_start
 
   # -------------------------------------------------------------------------
   # shocks analysis ---------------------------------------------------------
   # Create baseline data reactive expression
   df_baseline <- reactive({
-    req(df_main(), df_specific(), year_when_estimations_start())
-    # creating baseline data
     create_baseline_data(
       df_main = df_main(),
       df_specific = df_specific(),
-      year_when_estimations_start = year_when_estimations_start()
+      year_when_estimations_start = server_input_projection_start()
     )
   })
 
   # Create policy analysis reactive expression
   df_policy <- reactive({
-    req(df_baseline(), reactive_shock_values(), year_when_estimations_start())
     # analysing policy shock
     analyze_policy_shock(
       df_baseline = df_baseline(),
       shock_values = reactive_shock_values(),
-      year_when_estimations_start = year_when_estimations_start()
+      year_when_estimations_start = server_input_projection_start()
     )
   })
   # -------------------------------------------------------------------------
@@ -58,12 +85,12 @@ server <- function(input, output, session) {
   # Create reactive expressions using the imported functions
   available_years <- get_available_years(
     df_baseline,
-    year_when_estimations_start
+    server_input_projection_start
   )
 
-  pb_data <- get_pb_data(df_baseline, year_when_estimations_start)
-  ir_data <- get_ir_data(df_baseline, year_when_estimations_start)
-  gdp_data <- get_gdp_data(df_baseline, year_when_estimations_start)
+  pb_data <- get_pb_data(df_baseline, server_input_projection_start)
+  ir_data <- get_ir_data(df_baseline, server_input_projection_start)
+  gdp_data <- get_gdp_data(df_baseline, server_input_projection_start)
 
   # Create coefficients using the reactive data
   coefficients <- get_coefficients(pb_data, ir_data, gdp_data)
@@ -99,8 +126,7 @@ server <- function(input, output, session) {
 
     # Create reactive for processed data - shared across all conditions
     projection_processed_data <- reactive({
-      req(df_policy(), year_when_estimations_start())
-      projections_start_in <- year_when_estimations_start()
+      projections_start_in <- server_input_projection_start()
       start_year <- projections_start_in - 9
 
       df_policy() %>%
@@ -170,11 +196,8 @@ server <- function(input, output, session) {
 
   # Main observer code
   observe({
-    # Ensure required reactive values are available
-    req(df_policy(), year_when_estimations_start())
-
     # Calculate years once
-    projections_start_in <- year_when_estimations_start()
+    projections_start_in <- server_input_projection_start()
     start_year <- projections_start_in - 9
 
     # Helper function to create plots
@@ -289,8 +312,6 @@ server <- function(input, output, session) {
     }
   )
 
-  # -------------------------------------------------------------------------
-  # end: --------------------------------------------------------------------
 }
 
 # ends: -------------------------------------------------------------------

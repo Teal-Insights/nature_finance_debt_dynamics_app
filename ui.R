@@ -114,7 +114,7 @@ ui <- bslib::page_navbar(
             inputId = "id_country",
             label = "Select: Country",
             choices = select_country,
-            selected = "Argentina",
+            selected = NULL,
             options = shinyWidgets::pickerOptions(
               actionsBox = TRUE,
               size = 10,
