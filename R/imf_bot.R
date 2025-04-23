@@ -12,6 +12,7 @@ suppressPackageStartupMessages({
 source(file = "R/imf_countries.R")
 source(file = "R/imf_key_data.R")
 source(file = "R/imf_format_years.R")
+source(file = "R/echarts_main.R")
 
 # api call: ---------------------------------------------------------------
 df_main <- readr::read_rds(file = "data/IMFweo.rds") %>% 
@@ -224,6 +225,14 @@ highchart() %>%
     crosshairs = TRUE,
     shared = TRUE
   )
+
+# echarts: ----------------------------------------------------------------
+echarts_main(
+  data = df_long,
+  x_col = "year",
+  y_col = "outcome",
+  group_col = "indicator"
+)
 
 # ends: -------------------------------------------------------------------
 

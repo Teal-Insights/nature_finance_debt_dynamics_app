@@ -5,9 +5,9 @@ source(file = "R/imf_key_data.R")
 source(file = "R/imf_countries.R")
 source(file = "R/imf_indicators.R")
 source(file = "R/imf_format_years.R")
+source(file = "R/echarts_main.R")
 
 # loading necessary components
-source(file = "components/server_create_debt_plot.R")
 source(file = "components/server_prepare_shock_data.R")
 source(file = "components/server_excel_template.R")
 source(file = "components/server_shock_outputs.R")
@@ -71,7 +71,43 @@ server <- function(input, output, session) {
   # -------------------------------------------------------------------------
   # analysis panel
   # -------------------------------------------------------------------------
-
+  # server visualization data
+  server_data_viz <- reactive({
+    req(df_policy())
+    
+    df_policy() %>%
+      select(year, debt_policy_shock,Baseline) %>% 
+      tidyr::gather(key = "indicators", value = "outcome", -c("year")) %>%
+      dplyr::mutate(outcome = round(x = outcome, digits = 2)) %>%
+      dplyr::mutate(
+        indicators = dplyr::case_when(
+          indicators == "debt_policy_shock" ~ "Debt Projection : Policy Shock",
+          indicators == "Baseline" ~ "Baseline Debt",
+          .default =  indicators
+        )
+      )
+  })
+  
+  # visualize historical data
+  output$plot_full_input <- echarts4r::renderEcharts4r({
+    echarts_main(
+      data = server_data_viz(),
+      x_col = "year",
+      y_col = "outcome",
+      group_col = "indicators"
+    )
+  })
+  
+  # visualize projection data
+  output$plot_projection_input <- echarts4r::renderEcharts4r({
+    echarts_main(
+      data = server_data_viz() %>% 
+        filter(year >= (server_input_projection_start() - 1)),
+      x_col = "year",
+      y_col = "outcome",
+      group_col = "indicators"
+    )
+  })
   # -------------------------------------------------------------------------
   # data panel
   # -------------------------------------------------------------------------
@@ -211,38 +247,7 @@ server <- function(input, output, session) {
     }
   )
 
-  # Main observer code
-  observe({
-    # Calculate years once
-    projections_start_in <- server_input_projection_start()
-    start_year <- projections_start_in - 9
-
-    # Helper function to create plots
-    create_plots <- function(output_full_id, output_projection_id) {
-      # Full plot
-      output[[output_full_id]] <- echarts4r::renderEcharts4r({
-        df_long <- server_prepare_shock_data(
-          df_policy(), input$id_shock, start_year
-        )
-        # creating plot
-        server_create_debt_plot(df_long)
-      })
-
-      # Projection plot
-      output[[output_projection_id]] <- echarts4r::renderEcharts4r({
-        df_long <- df_policy() %>%
-          dplyr::filter(year >= projections_start_in) %>%
-          server_prepare_shock_data(input$id_shock)
-        # creating plot
-        server_create_debt_plot(df_long)
-      })
-    }
-
-    # Create main tab plots
-    create_plots("plot_full", "plot_projection")
-    # Create home tab plots
-    create_plots("plot_full_input", "plot_projection_input")
-  })
+  
   # -------------------------------------------------------------------------
   # Data: -------------------------------------------------------------------
   # Reactive data preparation

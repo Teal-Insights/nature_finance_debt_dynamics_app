@@ -32,7 +32,7 @@ select_country <- df_countries %>%
 
 # projection year
 current_year <- lubridate::year(Sys.Date())
-projection_years <- seq(from = current_year, by = 1, length.out = 4)
+projection_years <- seq(from = current_year, by = 1, length.out = 4)[1]
 # ui ----------------------------------------------------------------------
 ui <- bslib::page_navbar(
   # Initialize shinyjs
@@ -341,71 +341,62 @@ ui <- bslib::page_navbar(
   bslib::nav_panel(
     title = "Analysis",
     value = "analysis",
-    bslib::card(
-      bslib::layout_sidebar(
-        sidebar = bslib::sidebar(
-          # sidebar section background colour
-          bg = "#2c3e50",
-          
+    # main content area
+    bslib::layout_column_wrap(
+      width = NULL,
+      heights_equal = "row",
+      layout_column_wrap(
+        width = 1 / 3,
+        heights_equal = "row",
+        # GDP Growth Card
+        card(
+          full_screen = TRUE,
+          card_header(
+            class = "bg-primary text-white",
+            tags$span("GDP Growth Shock")
+          ),
+          ui_create_shock_table("gdp")
         ),
-        # main content area
-        bslib::layout_column_wrap(
-          width = NULL,
-          heights_equal = "row",
-          layout_column_wrap(
-            width = 1 / 3,
-            heights_equal = "row",
-            # GDP Growth Card
-            card(
-              full_screen = TRUE,
-              card_header(
-                class = "bg-primary text-white",
-                tags$span("GDP Growth Shock")
-              ),
-              ui_create_shock_table("gdp")
-            ),
-            card(
-              full_screen = TRUE,
-              card_header(
-                class = "bg-primary text-white",
-                tags$span("Primary Balance Shock")
-              ),
-              ui_create_shock_table("pb")
-            ),
-            # Real Interest Rate Card
-            card(
-              full_screen = TRUE,
-              card_header(
-                class = "bg-primary text-white",
-                tags$span("Real Interest Rate Shock"
-                )
-              ),
-              ui_create_shock_table("ir")
-            )
-          )
+        card(
+          full_screen = TRUE,
+          card_header(
+            class = "bg-primary text-white",
+            tags$span("Primary Balance Shock")
+          ),
+          ui_create_shock_table("pb")
         ),
-        bslib::layout_column_wrap(
-          width = NULL,
-          heights_equal = "row",
-          bslib::layout_column_wrap(
-            width = 1 / 2,
-            bslib::card(
-              full_screen = TRUE,
-              bslib::card_header(
-                tags$span("Historical Debt trends"),
-                class = "bg-primary text-white"
-              ),
-              echarts4r::echarts4rOutput(outputId = "plot_full_input")
-            ),
-            bslib::card(
-              full_screen = TRUE,
-              bslib::card_header(
-                tags$span("Projected Debt trends"),
-                class = "bg-primary text-white"
-              ),
-              echarts4r::echarts4rOutput(outputId = "plot_projection_input")
+        # Real Interest Rate Card
+        card(
+          full_screen = TRUE,
+          card_header(
+            class = "bg-primary text-white",
+            tags$span("Real Interest Rate Shock"
             )
-          )
+          ),
+          ui_create_shock_table("ir")
+        )
+      )
+    ),
+    bslib::layout_column_wrap(
+      width = NULL,
+      heights_equal = "row",
+      bslib::layout_column_wrap(
+        width = 1 / 2,
+        bslib::card(
+          full_screen = TRUE,
+          bslib::card_header(
+            tags$span("Historical Debt trends"),
+            class = "bg-primary text-white"
+          ),
+          echarts4r::echarts4rOutput(outputId = "plot_full_input")
+        ),
+        bslib::card(
+          full_screen = TRUE,
+          bslib::card_header(
+            tags$span("Projected Debt trends"),
+            class = "bg-primary text-white"
+          ),
+          echarts4r::echarts4rOutput(outputId = "plot_projection_input")
         )
       )
     )
@@ -417,78 +408,52 @@ ui <- bslib::page_navbar(
   bslib::nav_panel(
     title = "Graph",
     value = "graph",
-    bslib::card(
-      bslib::layout_sidebar(
-        sidebar = bslib::sidebar(
-          # sidebar background colour
-          bg = "#2c3e50",
-          # Shock selection
-          shinyWidgets::pickerInput(
-            inputId = "id_shock",
-            label = "Select shock",
-            choices = c(
-              "Policy shock", "GDP growth", "Primary balance",
-              "Real effective interest rate"
-            ),
-            options = shinyWidgets::pickerOptions(
-              actionsBox = TRUE,
-              size = 10,
-              selectedTextFormat = "count > 3"
-            )
+    bslib::layout_sidebar(
+      sidebar = bslib::sidebar(
+        # sidebar background colour
+        bg = "#2c3e50",
+        # Shock selection
+        shinyWidgets::pickerInput(
+          inputId = "id_shock",
+          label = "Select shock",
+          choices = c(
+            "Policy shock", "GDP growth", "Primary balance",
+            "Real effective interest rate"
           ),
-          hr(),
-          selectInput("file_type_projection", "Select: File Type",
-            choices = c("CSV", "Excel")
-          ),
-          downloadButton("download_projection", "Download Data"),
-          hr(),
-          h6("Excel Template"),
-          downloadButton("download_template", "Download Template"),
-          hr()
+          options = shinyWidgets::pickerOptions(
+            actionsBox = TRUE,
+            size = 10,
+            selectedTextFormat = "count > 3"
+          )
         ),
-        bslib::layout_column_wrap(
-          width = NULL,
-          heights_equal = "row",
-          bslib::layout_column_wrap(
-            width = 1 / 2,
-            bslib::card(
-              full_screen = TRUE,
-              bslib::card_header(
-                tags$span("Historical Debt trends"),
-                class = "bg-primary text-white"
-              ),
-              echarts4r::echarts4rOutput(outputId = "plot_full")
+        hr(),
+        selectInput("file_type_projection", "Select: File Type",
+                    choices = c("CSV", "Excel")
+        ),
+        downloadButton("download_projection", "Download Data"),
+        hr(),
+        h6("Excel Template"),
+        downloadButton("download_template", "Download Template"),
+        hr()
+      ),
+      card(
+          width = 1,
+          full_screen = TRUE,
+          bslib::card_header(
+            tags$span("Shock analysis result table"
             ),
-            bslib::card(
-              width = 1,
-              full_screen = TRUE,
-              bslib::card_header(
-                tags$span("Projected Debt trends"),
-                class = "bg-primary text-white"
-              ),
-              echarts4r::echarts4rOutput(outputId = "plot_projection")
-            )
+            class = "bg-primary text-white"
           ),
-          card(
-            width = 1,
-            full_screen = TRUE,
-            bslib::card_header(
-              tags$span("Shock analysis result table"
-              ),
-              class = "bg-primary text-white"
-            ),
-            card_body(
+          card_body(
+            div(
+              class = "table-container",
               div(
-                class = "table-container",
-                div(
-                  class = "table-responsive",
-                  DT::DTOutput(outputId = "data_projection")
-                )
+                class = "table-responsive",
+                DT::DTOutput(outputId = "data_projection")
               )
             )
           )
         )
-      )
     )
   ),
   
