@@ -1,5 +1,8 @@
 # # starts: -----------------------------------------------------------------
-
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(reactable)
+})
 # Rscripts: ---------------------------------------------------------------
 source(file = "R/imf_key_data.R")
 source(file = "R/imf_countries.R")
@@ -22,14 +25,12 @@ server <- function(input, output, session) {
   # Hide tabs initially
   # -------------------------------------------------------------------------
   shiny::hideTab(inputId = "main_navbar", target = "analysis")
-  shiny::hideTab(inputId = "main_navbar", target = "graph")
   shiny::hideTab(inputId = "main_navbar", target = "data")
   shiny::hideTab(inputId = "main_navbar", target = "docs")
   
   observeEvent(input$id_country, {
     if (!is.null(input$id_country) && input$id_country != "") {
       shiny::showTab(inputId = "main_navbar", target = "analysis")
-      shiny::showTab(inputId = "main_navbar", target = "graph")
       shiny::showTab(inputId = "main_navbar", target = "data")
       shiny::showTab(inputId = "main_navbar", target = "docs")
       # updateNavbarPage(session, "main_navbar", selected = "analysis")
@@ -111,8 +112,172 @@ server <- function(input, output, session) {
   # -------------------------------------------------------------------------
   # data panel
   # -------------------------------------------------------------------------
-
-
+  # ----------------------------------
+  # weo data
+  # ----------------------------------
+  weo_data <- reactive({
+    req(df_specific())
+    
+    df_specific() %>%
+      dplyr::mutate(across(
+        dplyr::where(is.numeric) & !all_of(c("year", "weo_country_code")),
+        ~ round(., digits = 2)
+      )) %>%
+      tidyr::spread(key = year, value = outcome) %>%
+      dplyr::arrange(units) %>%
+      dplyr::select(-estimates_start_after) %>% 
+      select(
+        -c(weo_country_code,country_name, iso3c, weo_subject_code, units,	scale)
+      ) %>% 
+      rename(
+        indicators = "subject_descriptor"
+      )
+  })
+  # ----------------------------------
+  # weo table
+  # ----------------------------------
+  output$full_data <- reactable::renderReactable({
+    data <- weo_data()
+    
+    # Define the required columns
+    required_columns <- c("indicators")
+    
+    # validation of data
+    validate(
+      need(
+        all(required_columns %in% colnames(data)),
+        "No data available to display."
+      )
+    )
+    
+    reactable::reactable(
+      data,
+      height = "auto",
+      defaultPageSize = nrow(data),
+      pagination = FALSE,
+      showPagination = FALSE,
+      showPageInfo = FALSE,
+      filterable = FALSE,
+      searchable = FALSE,
+      striped = TRUE,
+      highlight = TRUE,
+      compact = TRUE,
+      wrap = FALSE,
+      resizable = TRUE,
+      columns = list(
+        indicators = colDef(minWidth = 200,width = 400,sticky = "left")
+      )
+    )
+  })
+  # ----------------------------------
+  # shock analysis data
+  # ----------------------------------
+  shock_analysis <- reactive({
+    start_year <- server_input_projection_start() - 13
+    
+    df_policy() %>%
+      tidyr::gather(key = indicators, value = outcome, -c("year")) %>%
+      dplyr::filter(year >= start_year) %>%
+      dplyr::mutate(outcome = round(x = outcome, digits = 2)) %>%
+      tidyr::spread(key = year, value = outcome) %>%
+      dplyr::mutate(
+        indicators = dplyr::case_when(
+          indicators == "debt_GDP_shock" ~
+            "Debt Projection : GDP Shock",
+          indicators == "debt_PB_shock" ~
+            "Debt Projection : Primary balance Shock",
+          indicators == "debt_Interest_shock" ~
+            "Debt Projection : Real effective interest rate Shock",
+          indicators == "debt_policy_shock" ~
+            "Debt Projection : Policy Shock",
+          indicators == "Baseline" ~ "Baseline Debt",
+          TRUE ~ indicators
+        )
+      )
+  })
+  
+  # ----------------------------------
+  # shock analysis table
+  # ----------------------------------
+  output$data_projection <- reactable::renderReactable({
+    data <- shock_analysis()
+    
+    # Return reactable with options
+    reactable::reactable(
+      data,
+      height = "auto",
+      defaultPageSize = nrow(data),
+      pagination = FALSE,
+      showPagination = FALSE,
+      showPageInfo = FALSE,
+      filterable = FALSE,
+      searchable = FALSE,
+      striped = TRUE,
+      highlight = TRUE,
+      compact = TRUE,
+      wrap = FALSE,
+      resizable = TRUE,
+      columns = list(
+        indicators = colDef(minWidth = 200,width = 280,sticky = "left")
+      )
+    )
+  })
+  
+  # ----------------------------------
+  # weo data download
+  # ----------------------------------
+  
+  output$download_weo_csv <- downloadHandler(
+    filename = function() {
+      paste0(input$id_country, "-weo-data-",".csv")
+    },
+    content = function(file) {
+      write.csv(weo_data(), file, row.names = FALSE)
+    }
+  )
+  
+  output$download_weo_excel <- downloadHandler(
+    filename = function() {
+      paste0(input$id_country, "-weo-data-",".xlsx")
+    },
+    content = function(file) {
+      openxlsx::write.xlsx(weo_data(), file)
+    }
+  )
+  
+  # ----------------------------------
+  # shock analysis data download
+  # ----------------------------------
+  
+  output$download_shock_csv <- downloadHandler(
+    filename = function() {
+      paste0(input$id_country, "-shock-analysis-",".csv")
+    },
+    content = function(file) {
+      write.csv(shock_analysis(), file, row.names = FALSE)
+    }
+  )
+  
+  output$download_shock_excel <- downloadHandler(
+    filename = function() {
+      paste0(input$id_country, "-shock-analysis-",".xlsx")
+    },
+    content = function(file) {
+      openxlsx::write.xlsx(shock_analysis(), file)
+    }
+  )
+  
+  # ----------------------------------
+  # template data download
+  # ----------------------------------
+  output$download_shock_template <- downloadHandler(
+    filename = function() {
+      paste0(input$id_country, "-Policy shock-template", ".xlsx")
+    },
+    content = function(file) {
+      server_excel_template(file, df_main)
+    }
+  )
   # -------------------------------------------------------------------------
   # shocks analysis ---------------------------------------------------------
   # Create baseline data reactive expression
@@ -169,169 +334,6 @@ server <- function(input, output, session) {
   reactive_shock_values <- get_reactive_shock_values(
     available_years,
     shock_values
-  )
-
-  # -------------------------------------------------------------------------
-  # Graphs: -----------------------------------------------------------------
-  observe({
-    # Ensure id_shock has a value
-    req(input$id_shock)
-
-    # Create reactive for processed data - shared across all conditions
-    projection_processed_data <- reactive({
-      projections_start_in <- server_input_projection_start()
-      start_year <- projections_start_in - 9
-
-      df_policy() %>%
-        tidyr::gather(key = indicators, value = outcome, -c("year")) %>%
-        dplyr::filter(year >= start_year) %>%
-        dplyr::mutate(outcome = round(x = outcome, digits = 2)) %>%
-        tidyr::spread(key = year, value = outcome) %>%
-        dplyr::mutate(
-          indicators = dplyr::case_when(
-            indicators == "debt_GDP_shock" ~
-              "Debt Projection : GDP Shock",
-            indicators == "debt_PB_shock" ~
-              "Debt Projection : Primary balance Shock",
-            indicators == "debt_Interest_shock" ~
-              "Debt Projection : Real effective interest rate Shock",
-            indicators == "debt_policy_shock" ~
-              "Debt Projection : Policy Shock",
-            indicators == "Baseline" ~ "Baseline Debt",
-            TRUE ~ indicators
-          )
-        )
-    })
-
-    # Common data table rendering for all cases
-    output$data_projection <- renderDT({
-      req(projection_processed_data())
-      # return datatable
-      DT::datatable(
-        projection_processed_data()
-      )
-    })
-
-    # Common download handler for all cases
-    output$download_projection <- downloadHandler(
-      filename = function() {
-        file_ext <- ifelse(input$file_type_projection == "CSV", ".csv",
-          ".xlsx"
-        )
-        paste(input$id_country, "-", "Policy shock analysis", "-", Sys.Date(),
-          file_ext,
-          sep = ""
-        )
-      },
-      content = function(file) {
-        if (input$file_type_projection == "CSV") {
-          write.csv(projection_processed_data(), file, row.names = FALSE)
-        } else if (input$file_type_projection == "Excel") {
-          openxlsx::write.xlsx(projection_processed_data(), file,
-            overwrite = TRUE
-          )
-        }
-      }
-    )
-  })
-  # download handler for excel template
-  output$download_template <- downloadHandler(
-    filename = function() {
-      paste0(
-        input$id_country, "-Policy shock", "-template", "-", Sys.Date(),
-        ".xlsx"
-      )
-    },
-    content = function(file) {
-      server_excel_template(file, df_main)
-    }
-  )
-
-  
-  # -------------------------------------------------------------------------
-  # Data: -------------------------------------------------------------------
-  # Reactive data preparation
-  processed_data <- reactive({
-    req(df_specific())
-
-    # return data
-    if (input$data_format == "Long") {
-      df_specific() %>%
-        dplyr::mutate(across(
-          dplyr::where(is.numeric) & !all_of(c("year", "weo_country_code")),
-          ~ round(., digits = 2)
-        )) %>%
-        dplyr::select(-estimates_start_after)
-    } else {
-      df_specific() %>%
-        dplyr::mutate(across(
-          dplyr::where(is.numeric) & !all_of(c("year", "weo_country_code")),
-          ~ round(., digits = 2)
-        )) %>%
-        tidyr::spread(key = year, value = outcome) %>%
-        dplyr::arrange(units) %>%
-        dplyr::select(-estimates_start_after)
-    }
-  })
-
-  # Render the data table
-  output$full_data <- DT::renderDT({
-    # Define the required columns
-    required_columns <- c("iso3c")
-    # validation of data
-    validate(
-      need(
-        all(required_columns %in% colnames(processed_data())),
-        "No data available to display."
-      )
-    )
-    # return datatable
-    DT::datatable(processed_data())
-  })
-  # Reactive to check if the required columns exist
-  observe({
-    required_columns <- c("iso3c")
-    if (all(required_columns %in% colnames(processed_data()))) {
-      # Show the download button if data is available
-      shinyjs::show("downloadData")
-      # Show the file type if data is missing
-      shinyjs::show("file_type")
-    } else {
-      # Hide the download button if data is missing
-      shinyjs::hide("downloadData")
-      # Hide the file type if data is missing
-      shinyjs::hide("file_type")
-    }
-  })
-
-  # Download handler
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      # Define file extension based on user input
-      file_ext <- ifelse(input$file_type == "CSV", ".csv", ".xlsx")
-      paste(input$id_country, "-", Sys.Date(), file_ext, sep = "")
-    },
-    content = function(file) {
-      # Define the required columns
-      required_columns <- c("iso3c")
-
-      # Validate if the required columns exist in the data
-      validate(
-        need(
-          all(required_columns %in% colnames(processed_data())),
-          "No data available to display."
-        )
-      )
-
-      # If columns are valid, proceed to download
-      if (input$file_type == "CSV") {
-        # Write to CSV
-        write.csv(processed_data(), file, row.names = FALSE)
-      } else if (input$file_type == "Excel") {
-        # Write to Excel
-        openxlsx::write.xlsx(processed_data(), file, overwrite = TRUE)
-      }
-    }
   )
 
 }

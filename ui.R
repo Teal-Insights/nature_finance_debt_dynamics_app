@@ -233,7 +233,7 @@ ui <- bslib::page_navbar(
                         "The ", tags$b("Policy-Adjusted Forecast"),
                         " is the sum of the", tags$b("IMF WEO Baseline"),
                         " values plus the user-provided ", tags$b("Policy Shock"),
-                        " values.", 
+                        " values."
                       )
                     ),
                     tags$li(
@@ -403,96 +403,94 @@ ui <- bslib::page_navbar(
   ),
   
   # -------------------------------------------------------------------------
-  # Graph panel
-  # -------------------------------------------------------------------------
-  bslib::nav_panel(
-    title = "Graph",
-    value = "graph",
-    bslib::layout_sidebar(
-      sidebar = bslib::sidebar(
-        # sidebar background colour
-        bg = "#2c3e50",
-        # Shock selection
-        shinyWidgets::pickerInput(
-          inputId = "id_shock",
-          label = "Select shock",
-          choices = c(
-            "Policy shock", "GDP growth", "Primary balance",
-            "Real effective interest rate"
-          ),
-          options = shinyWidgets::pickerOptions(
-            actionsBox = TRUE,
-            size = 10,
-            selectedTextFormat = "count > 3"
-          )
-        ),
-        hr(),
-        selectInput("file_type_projection", "Select: File Type",
-                    choices = c("CSV", "Excel")
-        ),
-        downloadButton("download_projection", "Download Data"),
-        hr(),
-        h6("Excel Template"),
-        downloadButton("download_template", "Download Template"),
-        hr()
-      ),
-      card(
-          width = 1,
-          full_screen = TRUE,
-          bslib::card_header(
-            tags$span("Shock analysis result table"
-            ),
-            class = "bg-primary text-white"
-          ),
-          card_body(
-            div(
-              class = "table-container",
-              div(
-                class = "table-responsive",
-                DT::DTOutput(outputId = "data_projection")
-              )
-            )
-          )
-        )
-    )
-  ),
-  
-  # -------------------------------------------------------------------------
   # Data Panel
   # -------------------------------------------------------------------------
   bslib::nav_panel(
     title = "Data",
     value = "data",
-    bslib::card(
-      bslib::layout_sidebar(
-        sidebar = bslib::sidebar(
-          # sidebar background colour
-          bg = "#2c3e50",
-          # select input for data display type
-          selectInput("data_format", "Display data",
-            choices = c("Wide", "Long")
-          ),
-          hr(),
-          # select input for file type
-          selectInput("file_type", "Select: File Type",
-            choices = c("CSV", "Excel")
-          ),
-          hr(),
-          # download button
-          downloadButton("downloadData", "Download Data"),
-          hr()
-        ),
-        bslib::layout_column_wrap(
-          card(
-            card_body(
-              div(
-                class = "table-container",
-                div(
-                  class = "table-responsive",
-                  DTOutput("full_data")
+    layout_column_wrap(
+      width = 1,
+      heights_equal = "row", # Changed to valid value "row" 
+      style = "grid-template-rows: auto; align-items: start;", 
+      
+      card(
+        id = "weo_data_card",
+        class = "data-card",
+        style = "height: auto !important; display: flex !important; flex-direction: column !important; margin-bottom: 1rem !important;",
+        full_screen = TRUE,
+        card_header(
+          div(
+            style = "display: flex; justify-content: space-between; align-items: center;",
+            span("Weo Data"),
+            div(
+              style = "position: relative;",
+              tags$div(
+                class = "dropdown",
+                tags$button(
+                  id = "weo_download_btn",
+                  class = "btn btn-light btn-sm dropdown-toggle",
+                  type = "button", 
+                  `data-bs-toggle` = "dropdown",
+                  `aria-expanded` = "false",
+                  tags$i(class = "bi bi-list", style = "color: white; font-size: 18px;"),
+                  style = "border: none; background: transparent; padding: 2px 5px;"
+                ),
+                tags$ul(
+                  class = "dropdown-menu",
+                  tags$li(downloadLink("download_weo_csv", "CSV", class = "dropdown-item")),
+                  tags$li(downloadLink("download_weo_excel", "Excel", class = "dropdown-item"))
                 )
               )
             )
+          )
+        ),
+        card_body(
+          style = "padding: 0 !important; flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;", 
+          div(
+            style = "flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;",
+            reactable::reactableOutput("full_data")
+          )
+        )
+      ),
+      
+      # Shock analysis result table with dynamic height
+      card(
+        id = "shock_analysis_card",
+        class = "data-card",
+        style = "height: auto !important; display: flex !important; flex-direction: column !important; margin-bottom: 1rem !important;",
+        full_screen = TRUE,
+        card_header(
+          div(
+            style = "display: flex; justify-content: space-between; align-items: center;",
+            span("Shock Analysis"),
+            div(
+              style = "position: relative;",
+              tags$div(
+                class = "dropdown",
+                tags$button(
+                  id = "shock_download_btn",
+                  class = "btn btn-light btn-sm dropdown-toggle",
+                  type = "button", 
+                  `data-bs-toggle` = "dropdown",
+                  `aria-expanded` = "false",
+                  tags$i(class = "bi bi-list", style = "color: white; font-size: 18px;"),
+                  style = "border: none; background: transparent; padding: 2px 5px;"
+                ),
+                tags$ul(
+                  class = "dropdown-menu",
+                  tags$li(downloadLink("download_shock_csv", "CSV", class = "dropdown-item")),
+                  tags$li(downloadLink("download_shock_excel", "Excel", class = "dropdown-item")),
+                  tags$li(downloadLink("download_shock_template", "Template", class = "dropdown-item"))
+                )
+              )
+            )
+          )
+        ),
+        card_body(
+          style = "padding: 0 !important; flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;",
+          div(
+            style = "flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;",
+            reactable::reactableOutput("data_projection")
           )
         )
       )
