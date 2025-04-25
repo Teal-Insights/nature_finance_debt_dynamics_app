@@ -5,6 +5,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Specify the environment to use
+    environment: SHINYAPPS_TOKEN
     permissions:
       contents: read
       id-token: write
@@ -39,31 +41,36 @@ jobs:
         shell: Rscript {0}
       
       - name: Cache R packages
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
-          path: ~/.cache/R/renv
-          key: ${{ runner.os }}-R-${{ hashFiles('renv.lock') }}
+          path: |
+            ${{ env.R_LIBS_USER }}
+            ~/.local/share/renv
+            .renv
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-R-
+            ${{ runner.os }}-renv-
       
-      - name: setting up renv
-        uses: r-lib/actions/setup-renv@v2
-      
-      - name: Check environment variables (debugging)
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
-          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
-          SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
+      - name: Restore and install dependencies through renv
         run: |
-          echo "Token exists: $([ ! -z "$SHINYAPPS_TOKEN" ] && echo "Yes" || echo "No")"
-          echo "Secret exists: $([ ! -z "$SHINYAPPS_SECRET" ] && echo "Yes" || echo "No")"
-          echo "Account exists: $([ ! -z "$SHINYAPPS_USER" ] && echo "Yes" || echo "No")"
-        shell: bash
+          if (file.exists("renv.lock")) {
+            invisible(options(
+              renv.config.cache.enabled = TRUE,
+              renv.config.cache.symlinks = TRUE,
+              renv.config.install.verbose = FALSE
+            ))
+            renv::restore(prompt = FALSE)
+          } else {
+            cat("No renv.lock file found, skipping renv::restore()\n")
+          }
+          if (!requireNamespace("rsconnect", quietly = TRUE)) {
+            install.packages("rsconnect")
+          }
+        shell: Rscript {0}
       
       - name: Authorize and deploy app
-        if: ${{ github.event_name != 'pull_request' }}
         env:
+          # Access the secrets from the environment
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
           SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
@@ -76,31 +83,42 @@ jobs:
           
           cat("Using account:", account, "\n")
           cat("Deploying app:", app_name, "\n")
+          cat("Token length:", nchar(token), "\n")
+          cat("Secret length:", nchar(secret), "\n")
           
           if (token == "" || secret == "" || account == "") {
-            stop("Missing shinyapps.io authentication information. Please check your repository secrets.")
+            stop("Missing shinyapps.io authentication information. Please check your environment secrets.")
           }
           
-          rsconnect::setAccountInfo(
-            name = account,
-            token = token,
-            secret = secret
-          )
-          
-          exclude_list <- c("rsconnect/", ".git/", ".github/", ".gitignore", "README.md", "renv/")
-          
-          # Deploy the app
-          rsconnect::deployApp(
-            appDir = ".",
-            appName = app_name,
-            account = account,
-            forceUpdate = TRUE,
-            appFiles = NULL,
-            appFileIgnore = exclude_list,
-            appDependencies = TRUE,
-            launch.browser = FALSE
-          )
+          tryCatch({
+            rsconnect::setAccountInfo(
+              name = account,
+              token = token,
+              secret = secret
+            )
+            
+            exclude_list <- c("rsconnect/", ".git/", ".github/", ".gitignore", "README.md", "renv/")
+            
+            # Deploy the app
+            rsconnect::deployApp(
+              appDir = ".",
+              appName = app_name,
+              account = account,
+              forceUpdate = TRUE,
+              appFiles = NULL,
+              appFileIgnore = exclude_list,
+              appDependencies = TRUE,
+              launch.browser = FALSE
+            )
+          }, error = function(e) {
+            cat("Error details:", conditionMessage(e), "\n")
+            if (grepl("401", conditionMessage(e))) {
+              cat("\nAuthentication failed. Please check your shinyapps.io credentials.\n")
+            }
+            stop(e)
+          })
         shell: Rscript {0}
       
       - name: Post-deployment message
+        if: success()
         run: echo "Deployment complete! App published to shinyapps.io"
