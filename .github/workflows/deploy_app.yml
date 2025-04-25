@@ -1,0 +1,123 @@
+name: Deploy Shiny App
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4.3'
+          
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libxml2-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libpng-dev \
+            libtiff5-dev \
+            libjpeg-dev
+      
+      - name: Install renv and rsconnect
+        run: |
+          install.packages(c("renv", "rsconnect"))
+        shell: Rscript {0}
+      
+      - name: Cache R packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.R_LIBS_USER }}
+            ~/.local/share/renv
+            .renv
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
+      
+      - name: Restore and install dependencies through renv
+        run: |
+          if (file.exists("renv.lock")) {
+            invisible(options(
+              renv.config.cache.enabled = TRUE,
+              renv.config.cache.symlinks = TRUE,
+              renv.config.install.verbose = FALSE
+            ))
+            renv::restore(prompt = FALSE)
+          } else {
+            cat("No renv.lock file found, skipping renv::restore()\n")
+          }
+          if (!requireNamespace("rsconnect", quietly = TRUE)) {
+            install.packages("rsconnect")
+          }
+        shell: Rscript {0}
+      
+      - name: Check environment variables (debugging)
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
+          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
+          SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
+        run: |
+          echo "Token exists: $([ ! -z "$SHINYAPPS_TOKEN" ] && echo "Yes" || echo "No")"
+          echo "Secret exists: $([ ! -z "$SHINYAPPS_SECRET" ] && echo "Yes" || echo "No")"
+          echo "Account exists: $([ ! -z "$SHINYAPPS_USER" ] && echo "Yes" || echo "No")"
+        shell: bash
+      
+      - name: Authorize and deploy app
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
+          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
+          SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
+          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          token <- Sys.getenv("SHINYAPPS_TOKEN")
+          secret <- Sys.getenv("SHINYAPPS_SECRET")
+          account <- Sys.getenv("SHINYAPPS_USER")
+          app_name <- Sys.getenv("GITHUB_REPOSITORY_NAME")
+          
+          cat("Using account:", account, "\n")
+          cat("Deploying app:", app_name, "\n")
+          
+          if (token == "" || secret == "" || account == "") {
+            stop("Missing shinyapps.io authentication information. Please check your repository secrets.")
+          }
+          
+          rsconnect::setAccountInfo(
+            name = account,
+            token = token,
+            secret = secret
+          )
+          
+          exclude_list <- c("rsconnect/", ".git/", ".github/", ".gitignore", "README.md", "renv/")
+          
+          # Deploy the app
+          rsconnect::deployApp(
+            appDir = ".",
+            appName = app_name,
+            account = account,
+            forceUpdate = TRUE,
+            appFiles = NULL,
+            appFileIgnore = exclude_list,
+            appDependencies = TRUE,
+            launch.browser = FALSE
+          )
+        shell: Rscript {0}
+      
+      - name: Post-deployment message
+        run: echo "Deployment complete! App published to shinyapps.io"

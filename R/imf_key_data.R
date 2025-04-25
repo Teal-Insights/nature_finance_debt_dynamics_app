@@ -65,7 +65,7 @@ imf_key_data <- function() {
         
         # Try to read data even if URL check failed
         df_raw_countries <- tryCatch({
-          read.delim(file = countries, skipNul = TRUE)
+          read.delim(file = countries, skipNul = TRUE, encoding = "UTF-8")
         }, error = function(e) {
           warning("Failed to download data: ", e$message)
           return(NULL)
@@ -113,16 +113,18 @@ imf_key_data <- function() {
               .default = country_name
             )
           ) %>%
-          dplyr::relocate(
-            c(iso3c, country_name),
-            .after = weo_country_code
+          dplyr::relocate(c(iso3c, country_name),.after = weo_country_code
           ) %>%
           dplyr::select(-country) %>%
           dplyr::filter(
             weo_subject_code %in% c(
               "NGDP_RPCH", "GGXONLB_NGDP", "GGXWDG_NGDP"
             )
-          )
+          ) %>% 
+          mutate(
+            country_name = case_when(
+              iso3c == "TUR" ~ "Turkiye", TRUE ~ country_name
+            ))
         
         # export data
         tryCatch({

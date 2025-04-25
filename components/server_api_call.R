@@ -1,19 +1,4 @@
 # starts: -----------------------------------------------------------------
-read_imf_weo <- function() {
-  readr::read_rds(file = "data/IMFweo.rds")
-}
-# Helper functions for data processing
-process_main_data <- function(df_countries, input_country, imf_data) {
-  country_iso3c <- df_countries %>%
-    dplyr::mutate(
-      label = gsub(pattern = "The ", x = label, replacement = "")
-    ) %>%
-    dplyr::filter(label %in% c(input_country)) %>%
-    dplyr::pull(iso3c)
-
-  imf_data %>%
-    dplyr::filter(iso3c == country_iso3c)
-}
 
 process_specific_data <- function(main_data, projection_year) {
   projections_start_in <- projection_year
@@ -23,7 +8,7 @@ process_specific_data <- function(main_data, projection_year) {
     dplyr::select(
       c(
         weo_country_code, iso3c, country_name, weo_subject_code,
-        subject_descriptor, units, scale, estimates_start_after, year,
+        subject_descriptor, units, scale, year,
         outcome
       )
     ) %>%

@@ -21,14 +21,20 @@ source(file = "components/ui_footer_component.R")
 source(file = "components/ui_documentation_component.R")
 source(file = "components/ui_contact_component.R")
 # data: -------------------------------------------------------------------
-df_countries <- imf_countries()
+#  main data
+df_main_weo <- readr::read_rds(file = "data/IMFweo.rds")
+# incomplete countries
+incomplete <- df_main_weo %>% 
+  select(country_name, weo_subject_code) %>% 
+  distinct() %>% 
+  summarise(.by = country_name, count = n()) %>% 
+  arrange(desc(count)) %>% 
+  filter(count < 3) %>% 
+  pull(country_name)
+
 # pickers: ----------------------------------------------------------------
-select_country <- df_countries %>%
-  filter(!is.na(label)) %>%
-  pull(label) %>%
-  unique() %>%
-  gsub(pattern = "The ", x = ., replacement = "") %>%
-  sort()
+select_country <- imf_countries() %>% 
+  filter(!(label %in% incomplete)) %>% pull(label)
 
 # projection year
 current_year <- lubridate::year(Sys.Date())
@@ -81,7 +87,7 @@ ui <- bslib::page_navbar(
       href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
     )
   ),
-  
+    
   # theme of the app
   theme = bslib::bs_theme(version = 5, bootswatch = "minty"),
   
@@ -98,7 +104,7 @@ ui <- bslib::page_navbar(
       heights_equal = "row",
       # About the FIMA Explorer App
       bslib::card(
-        full_screen = TRUE,
+        full_screen = FALSE,
         height = 400,
         class = "border-0 shadow-none",
         bslib::card_header(h5("About the Debt Path Explorer App")),
@@ -256,7 +262,7 @@ ui <- bslib::page_navbar(
       # -------------------------------
       
       bslib::card(
-        full_screen = TRUE,
+        full_screen = FALSE,
         height = 400,
         class = "border-0 shadow-none",
         bslib::card_header(h5("Assessment")),
@@ -291,7 +297,7 @@ ui <- bslib::page_navbar(
                     title = "Select country..."
                   ),
                   multiple = FALSE,
-                  selected = NULL,
+                  selected = select_country[1],
                   width = "300px"
                 )
               )
@@ -410,89 +416,121 @@ ui <- bslib::page_navbar(
     value = "data",
     layout_column_wrap(
       width = 1,
-      heights_equal = "row", # Changed to valid value "row" 
+      heights_equal = "row",
       style = "grid-template-rows: auto; align-items: start;", 
       
-      card(
+      div(
         id = "weo_data_card",
         class = "data-card",
-        style = "height: auto !important; display: flex !important; flex-direction: column !important; margin-bottom: 1rem !important;",
-        full_screen = TRUE,
-        card_header(
+        style = "height: auto; display: flex; flex-direction: column; margin-bottom: 1rem; border: 1px solid rgba(0,0,0,0.125); border-radius: 0.25rem; overflow: hidden;",
+        
+        # Header (replacing card_header)
+        div(
+          style = "display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; background-color: #2c3e50; border-bottom: 1px solid rgba(0,0,0,0.125); color: white;",
+          span("Weo Data"),
           div(
-            style = "display: flex; justify-content: space-between; align-items: center;",
-            span("Weo Data"),
-            div(
-              style = "position: relative;",
-              tags$div(
-                class = "dropdown",
-                tags$button(
-                  id = "weo_download_btn",
-                  class = "btn btn-light btn-sm dropdown-toggle",
-                  type = "button", 
-                  `data-bs-toggle` = "dropdown",
-                  `aria-expanded` = "false",
-                  tags$i(class = "bi bi-list", style = "color: white; font-size: 18px;"),
-                  style = "border: none; background: transparent; padding: 2px 5px;"
-                ),
-                tags$ul(
-                  class = "dropdown-menu",
-                  tags$li(downloadLink("download_weo_csv", "CSV", class = "dropdown-item")),
-                  tags$li(downloadLink("download_weo_excel", "Excel", class = "dropdown-item"))
-                )
+            style = "position: relative;",
+            tags$div(
+              class = "dropdown",
+              tags$button(
+                id = "weo_download_btn",
+                class = "btn btn-light btn-sm dropdown-toggle",
+                type = "button", 
+                `data-bs-toggle` = "dropdown",
+                `aria-expanded` = "false",
+                tags$i(class = "bi bi-list", style = "color: white; font-size: 18px;"),
+                style = "border: none; background: transparent; padding: 2px 5px;"
+              ),
+              tags$ul(
+                class = "dropdown-menu",
+                tags$li(downloadLink("download_weo_csv", "CSV", class = "dropdown-item")),
+                tags$li(downloadLink("download_weo_excel", "Excel", class = "dropdown-item"))
               )
             )
           )
         ),
-        card_body(
-          style = "padding: 0 !important; flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;", 
+        
+        # Body (replacing card_body)
+        div(
+          style = "padding: 0; flex: 1; display: flex; flex-direction: column; min-height: 0;", 
           div(
-            style = "flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;",
+            style = "flex: 1; display: flex; flex-direction: column; min-height: 0;",
             reactable::reactableOutput("full_data")
           )
-        )
+        ),
+        
+        # Add expand/fullscreen button functionality
+        tags$button(
+          id = "weo_fullscreen_btn",
+          class = "btn btn-sm btn-light fullscreen-button",
+          style = "position: absolute; top: 5px; right: 40px; border: none; background: transparent; padding: 2px 5px;",
+          tags$i(class = "bi bi-arrows-fullscreen")
+        ),
+        tags$script(HTML("
+        $(document).ready(function() {
+          $('#weo_fullscreen_btn').click(function() {
+            $('#weo_data_card').toggleClass('fullscreen');
+          });
+        });
+      "))
       ),
       
       # Shock analysis result table with dynamic height
-      card(
+      div(
         id = "shock_analysis_card",
         class = "data-card",
-        style = "height: auto !important; display: flex !important; flex-direction: column !important; margin-bottom: 1rem !important;",
-        full_screen = TRUE,
-        card_header(
+        style = "height: auto; display: flex; flex-direction: column; margin-bottom: 1rem; border: 1px solid rgba(0,0,0,0.125); border-radius: 0.25rem; overflow: hidden;",
+        
+        # Header (replacing card_header)
+        div(
+          style = "display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; background-color: #2c3e50; border-bottom: 1px solid rgba(0,0,0,0.125); color: white;",
+          span("Shock Analysis"),
           div(
-            style = "display: flex; justify-content: space-between; align-items: center;",
-            span("Shock Analysis"),
-            div(
-              style = "position: relative;",
-              tags$div(
-                class = "dropdown",
-                tags$button(
-                  id = "shock_download_btn",
-                  class = "btn btn-light btn-sm dropdown-toggle",
-                  type = "button", 
-                  `data-bs-toggle` = "dropdown",
-                  `aria-expanded` = "false",
-                  tags$i(class = "bi bi-list", style = "color: white; font-size: 18px;"),
-                  style = "border: none; background: transparent; padding: 2px 5px;"
-                ),
-                tags$ul(
-                  class = "dropdown-menu",
-                  tags$li(downloadLink("download_shock_csv", "CSV", class = "dropdown-item")),
-                  tags$li(downloadLink("download_shock_excel", "Excel", class = "dropdown-item")),
-                  tags$li(downloadLink("download_shock_template", "Template", class = "dropdown-item"))
-                )
+            style = "position: relative;",
+            tags$div(
+              class = "dropdown",
+              tags$button(
+                id = "shock_download_btn",
+                class = "btn btn-light btn-sm dropdown-toggle",
+                type = "button", 
+                `data-bs-toggle` = "dropdown",
+                `aria-expanded` = "false",
+                tags$i(class = "bi bi-list", style = "color: white; font-size: 18px;"),
+                style = "border: none; background: transparent; padding: 2px 5px;"
+              ),
+              tags$ul(
+                class = "dropdown-menu",
+                tags$li(downloadLink("download_shock_csv", "CSV", class = "dropdown-item")),
+                tags$li(downloadLink("download_shock_excel", "Excel", class = "dropdown-item")),
+                tags$li(downloadLink("download_shock_template", "Template", class = "dropdown-item"))
               )
             )
           )
         ),
-        card_body(
-          style = "padding: 0 !important; flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;",
+        
+        # Body (replacing card_body)
+        div(
+          style = "padding: 0; flex: 1; display: flex; flex-direction: column; min-height: 0;",
           div(
-            style = "flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;",
+            style = "flex: 1; display: flex; flex-direction: column; min-height: 0;",
             reactable::reactableOutput("data_projection")
           )
-        )
+        ),
+        
+        # Add expand/fullscreen button functionality
+        tags$button(
+          id = "shock_fullscreen_btn",
+          class = "btn btn-sm btn-light fullscreen-button",
+          style = "position: absolute; top: 5px; right: 40px; border: none; background: transparent; padding: 2px 5px;",
+          tags$i(class = "bi bi-arrows-fullscreen")
+        ),
+        tags$script(HTML("
+        $(document).ready(function() {
+          $('#shock_fullscreen_btn').click(function() {
+            $('#shock_analysis_card').toggleClass('fullscreen');
+          });
+        });
+      "))
       )
     )
   ),

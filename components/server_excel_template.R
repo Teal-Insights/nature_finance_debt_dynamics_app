@@ -8,13 +8,12 @@ server_excel_template <- function(file, df_main) {
   new_data <- df_main() %>%
     dplyr::select(c(
       iso3c, country_name, weo_subject_code,
-      subject_descriptor, units, scale, estimates_start_after, year,
+      subject_descriptor, units, scale, year,
       outcome
     )) %>%
     dplyr::filter(year > (projections_start_after - 11)) %>%
     tidyr::spread(key = year, value = outcome) %>%
-    dplyr::arrange(units) %>%
-    dplyr::select(-estimates_start_after)
+    dplyr::arrange(units)
 
   # Load the workbook
   wb <- openxlsx::loadWorkbook(excel_path)
