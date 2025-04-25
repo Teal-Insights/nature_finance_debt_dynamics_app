@@ -39,32 +39,15 @@ jobs:
         shell: Rscript {0}
       
       - name: Cache R packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: |
-            ${{ env.R_LIBS_USER }}
-            ~/.local/share/renv
-            .renv
-          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          path: ~/.cache/R/renv
+          key: ${{ runner.os }}-R-${{ hashFiles('renv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-renv-
+            ${{ runner.os }}-R-
       
-      - name: Restore and install dependencies through renv
-        run: |
-          if (file.exists("renv.lock")) {
-            invisible(options(
-              renv.config.cache.enabled = TRUE,
-              renv.config.cache.symlinks = TRUE,
-              renv.config.install.verbose = FALSE
-            ))
-            renv::restore(prompt = FALSE)
-          } else {
-            cat("No renv.lock file found, skipping renv::restore()\n")
-          }
-          if (!requireNamespace("rsconnect", quietly = TRUE)) {
-            install.packages("rsconnect")
-          }
-        shell: Rscript {0}
+      - name: setting up renv
+        uses: r-lib/actions/setup-renv@v2
       
       - name: Check environment variables (debugging)
         if: ${{ github.event_name != 'pull_request' }}
