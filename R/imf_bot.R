@@ -3,7 +3,6 @@
 # loading necessary libraries
 suppressPackageStartupMessages({
   library(tidyverse)
-  library(imfweo)
   library(echarts4r)
   library(plotly)
   library(highcharter)
