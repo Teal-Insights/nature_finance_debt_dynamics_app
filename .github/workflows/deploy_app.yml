@@ -2,11 +2,11 @@ name: Deploy Shiny App
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:  # Added manual trigger option
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Specify the environment to use
-    environment: SHINYAPPS_TOKEN
     permissions:
       contents: read
       id-token: write
@@ -18,7 +18,7 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.4.3'
+          r-version: '4.3.2'  # Changed to more stable version
           
       - name: Install system dependencies
         run: |
@@ -38,6 +38,7 @@ jobs:
       - name: Install renv and rsconnect
         run: |
           install.packages(c("renv", "rsconnect"))
+          packageVersion("rsconnect")  # Print the version for debugging
         shell: Rscript {0}
       
       - name: Cache R packages
@@ -57,39 +58,52 @@ jobs:
             invisible(options(
               renv.config.cache.enabled = TRUE,
               renv.config.cache.symlinks = TRUE,
-              renv.config.install.verbose = FALSE
+              renv.config.install.verbose = TRUE  # Changed to TRUE for better debugging
             ))
             renv::restore(prompt = FALSE)
           } else {
             cat("No renv.lock file found, skipping renv::restore()\n")
+            # Install required packages if no renv.lock exists
+            install.packages(c("shiny", "rsconnect"))
           }
           if (!requireNamespace("rsconnect", quietly = TRUE)) {
             install.packages("rsconnect")
           }
         shell: Rscript {0}
       
+      # Added cleanup step
+      - name: Clean repository for deployment
+        run: |
+          # Remove files not needed in the deployed app
+          if [ -f ".gitignore" ]; then
+            cat .gitignore
+          fi
+          # Remove common development files
+          rm -rf .git .github .gitignore README.md
+      
       - name: Authorize and deploy app
         env:
-          # Access the secrets from the environment
+          SHINYAPPS_NAME: ${{ secrets.SHINYAPPS_NAME }}
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
-          SHINYAPPS_USER: ${{ secrets.SHINYAPPS_USER }}
           GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
         run: |
+          # Improved error handling and logging
+          options(warn = 1)  # Print warnings immediately
+          
           token <- Sys.getenv("SHINYAPPS_TOKEN")
           secret <- Sys.getenv("SHINYAPPS_SECRET")
-          account <- Sys.getenv("SHINYAPPS_USER")
+          account <- Sys.getenv("SHINYAPPS_NAME")
           app_name <- Sys.getenv("GITHUB_REPOSITORY_NAME")
           
           cat("Using account:", account, "\n")
           cat("Deploying app:", app_name, "\n")
-          cat("Token length:", nchar(token), "\n")
-          cat("Secret length:", nchar(secret), "\n")
           
           if (token == "" || secret == "" || account == "") {
-            stop("Missing shinyapps.io authentication information. Please check your environment secrets.")
+            stop("Missing shinyapps.io authentication information. Please check your repository secrets.")
           }
           
+          # Set the account info
           tryCatch({
             rsconnect::setAccountInfo(
               name = account,
@@ -97,28 +111,37 @@ jobs:
               secret = secret
             )
             
-            exclude_list <- c("rsconnect/", ".git/", ".github/", ".gitignore", "README.md", "renv/")
+            # Verify account is registered
+            accounts <- rsconnect::accountInfo()
+            cat("Account registered:", account %in% accounts$name, "\n")
             
-            # Deploy the app
+            # Create .gitignore for rsconnect directory if it doesn't exist
+            if (!dir.exists("rsconnect")) {
+              dir.create("rsconnect")
+            }
+            
+            # List files in the app directory for debugging
+            cat("Files to be deployed:\n")
+            list.files(".", recursive = FALSE)
+            
+            # Deploy the app with only the essential parameters
             rsconnect::deployApp(
               appDir = ".",
               appName = app_name,
               account = account,
               forceUpdate = TRUE,
-              appFiles = NULL,
-              appFileIgnore = exclude_list,
-              appDependencies = TRUE,
-              launch.browser = FALSE
+              launch.browser = FALSE,
+              logLevel = "verbose"  # Added for better logging
             )
           }, error = function(e) {
-            cat("Error details:", conditionMessage(e), "\n")
-            if (grepl("401", conditionMessage(e))) {
-              cat("\nAuthentication failed. Please check your shinyapps.io credentials.\n")
-            }
-            stop(e)
+            cat("Error during deployment:\n")
+            print(e)
+            stop("Deployment failed. See error message above.")
           })
         shell: Rscript {0}
       
       - name: Post-deployment message
         if: success()
-        run: echo "Deployment complete! App published to shinyapps.io"
+        run: |
+          echo "Deployment complete! App published to shinyapps.io"
+          echo "View your app at https://${{ secrets.SHINYAPPS_NAME }}.shinyapps.io/${{ github.event.repository.name }}/"
